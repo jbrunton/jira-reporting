@@ -45,18 +45,61 @@ $(function() {
     });
   }
   
+  function generateReportData(issues, sprintFieldId) {
+    var sprintIds = _(issues)
+      .reduce(function(sprintIds, issue) {
+        return sprintIds.concat(issue.fields[sprintFieldId] || []);
+      }, []);
+    
+    var sprints = _(_.uniq(sprintIds))
+      .map(function(sprintId) {
+        var sprintName = /name=((\w|\s)+)/.exec(sprintId)[1];
+        var sprintIssues = _(issues).filter(function(issue) {
+          return _(issue.fields[sprintFieldId])
+            .contains(sprintId);
+        });
+        return {
+          id: sprintId,
+          name: sprintName,
+          issues: sprintIssues
+        };
+      });
+    
+    return {
+      sprints: sprints,
+      issues: issues
+    };
+  }
+  
+  function getProjectData() {
+    return Q.all([
+      getCurrentRapidViewIssues(),
+      getSprintFieldId()
+    ]).spread(function(issues, sprintFieldId) {
+      return generateReportData(issues, sprintFieldId);      
+    });
+  }
+  
   function renderReport() {
     $('#ghx-chart-panel-content')
       .empty()
-      .append("<table></table>");
+      .append("<table id='jira-reporting-sprints' class='aui'></table>")
+      .append("<table id='jira-reporting-issues' class='aui'></table>");
       
-    var table = $('#ghx-chart-panel-content table');
-      
-    getCurrentRapidViewIssues()
-      .then(function(issues) {
-        _(issues).each(function(issue) {
-          table.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
-        });
+    var issuesTable = $('#ghx-chart-panel-content table#jira-reporting-issues');
+    var sprintsTable = $('#ghx-chart-panel-content table#jira-reporting-sprints');
+    
+    getProjectData()
+      .then(function(data) {
+        _(data.issues).each(function(issue) {
+          issuesTable.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
+        });        
+        _(data.sprints).each(function(sprint) {
+          sprintsTable.append("<tr><th colspan='2'>" + sprint.name + "</th></tr>");
+          _(sprint.issues).each(function(issue) {
+            sprintsTable.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
+          });
+        });        
       });
   }
 
