@@ -1,0 +1,22 @@
+{
+	"manifest_version": 2,
+
+	"name": "Jira Reporting",
+	"description": "This extension adds a button to Trello boards to one-click create a Jira issue for a card, and archive the card.",
+	"version":  "0.2",
+
+	"permissions": [
+		"https://*/",
+		"storage"
+	],
+
+	"content_scripts": [
+		{
+		  "matches": ["https://jbrunton.atlassian.net/secure/RapidBoard.jspa?*view=reporting*"],
+			"js": [
+			  "vendor/lodash.underscore.js", "vendor/jquery-2.1.1.js", "vendor/q.js",
+			  "src/jira_client.js", "src/main.js"
+			]
+		}
+	]
+}
