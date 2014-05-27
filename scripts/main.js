@@ -1,3 +1,8 @@
+var JiraClient = require('./jira_client');
+var $ = require('jquery');
+var _ = require('lodash');
+var Q = require('q');
+
 $(function() {
   var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
   //   $.ajax({
@@ -88,9 +93,11 @@ $(function() {
   function generateReportData() {
     return getProjectEpics()
       .then(function (epics) {
-        return Q.all(_(epics).map(function(epic) {
-          return getEpicData(epic);
-        }));
+        return Q.all(
+          _(epics).map(function(epic) {
+            return getEpicData(epic);
+          }).value()
+        );
       });
   }
   

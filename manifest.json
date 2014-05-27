@@ -13,10 +13,7 @@
 	"content_scripts": [
 		{
 		  "matches": ["https://jbrunton.atlassian.net/secure/RapidBoard.jspa?*view=reporting*"],
-			"js": [
-			  "vendor/lodash.underscore.js", "vendor/jquery-2.1.1.js", "vendor/q.js",
-			  "src/jira_client.js", "src/main.js"
-			]
+			"js": ["main.js"]
 		}
 	]
 }

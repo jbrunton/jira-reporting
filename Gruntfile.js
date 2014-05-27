@@ -11,10 +11,22 @@ module.exports = function(grunt) {
       }
     },
     
+    copy: {
+      main: {
+        src: 'manifest.json',
+        dest: 'build/'
+      }
+    },
+    
     browserify: {
       release: {
-        src: 'scripts/*.js',
-        dest: 'build/main.js'
+        src: ['scripts/*.js'],
+        dest: 'build/main.js',
+        options: {
+          bundleOptions: {
+            debug: true
+          }
+        }
       },
       test: {
         src: 'test/*_spec.js',
@@ -48,9 +60,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   
   grunt.registerTask('test', ['browserify:test', 'jasmine']);
-  grunt.registerTask('test:debug', ['browserify:test', 'jasmine:test:build', 'shell:debug']);
-  grunt.registerTask('build', ['browserify:release']);
+  grunt.registerTask('test:debug', ['copy:main', 'browserify:test', 'jasmine:test:build', 'shell:debug']);
+  grunt.registerTask('build', ['copy:main', 'browserify:release']);
   
 };
