@@ -41,11 +41,20 @@ JiraClient.prototype.getResourceByName = function(resourceType, resourceName) {
   return deferred.promise;
 }
 
-JiraClient.prototype.search = function(jql) {
+JiraClient.prototype.search = function(opts) {
+  var queryString = "maxResults=9999";
+  if (typeof opts == "object") {
+    queryString += "&jql=" + opts.query;
+    if (opts.expand) {
+      queryString += "&expand=" + opts.expand.join();
+    }
+  } else {
+    queryString += "&jql=" + opts;
+  }
   var deferred = Q.defer();
   $.ajax({
 		type: 'GET',
-		url: this._domain + "/rest/api/2/search/?maxResults=9999&jql=" + jql,
+		url: this._domain + "/rest/api/2/search/?" + queryString,
 		contentType: "application/json",
 		error: function() {
 			deferred.reject();

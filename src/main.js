@@ -57,7 +57,10 @@ $(function() {
   }
   
   function getIssuesForEpic(epicKey) {
-    return jiraClient.search("cf[10008]=" + epicKey);
+    return jiraClient.search({
+      query: "cf[10008]=" + epicKey,
+      expand: ['changelog']
+    });
   }
   
   function getEpicData(epic) {
