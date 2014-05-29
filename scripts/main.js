@@ -149,7 +149,11 @@ $(function() {
     getProjectData()
       .then(function(data) {
         _(data).each(function(epicData) {
-          issuesTable.append("<tr><td>" + epicData.epic.key + "</td><td>" + epicData.epic.fields.summary + "</td></tr>");          
+          issuesTable.append("<tr><th>" + epicData.epic.key + "</th><th>" + epicData.epic.fields.summary + "</th></tr>");          
+          _(epicData.issues).each(function(issue) {
+            var issueHref = "/browse/" + issue.key;
+            issuesTable.append("<tr><td><a href='" + issueHref + "'>" + issue.key + "</a></td><td>" + issue.fields.summary + "</td></tr>");                      
+          });
         });
         // _(data.issues).each(function(issue) {
         //   issuesTable.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
