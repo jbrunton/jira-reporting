@@ -62,20 +62,49 @@ $(function() {
       });
   }
   
+  function getIssueStartedDate(issue) {
+    var startedTransitions = _(issue.changelog.histories).filter(function(entry) {
+      return _(entry.items).any(function(item) {
+        return item.field == "status" && item.toString == "In Progress";
+      });      
+    });
+    if (startedTransitions.any()) {
+      return startedTransitions.first().created;
+    } else {
+      return null;
+    }
+  }
+  
   function getIssuesForEpic(epicKey) {
     return jiraClient.search({
       query: "cf[10008]=" + epicKey,
       expand: ['changelog']
+    }).then(function(issues) {
+      var issues = _(issues).map(function(issue) {
+        _(issue.changelog.histories).map(function(entry) {
+          entry.created = new Date(entry.created);
+          return entry;
+        });
+        issue.startedDate = getIssueStartedDate(issue);
+        return issue;
+        //issue.foo = bar;
+      }).value();
+      /*_(issues).each(function(issue) {
+        _(issue.changelog.histories).map(function(entry) {
+          entry.created = new Date(entry.created);
+          return entry;
+        });
+        issue.started = getIssueStartedDate(issue);
+      });*/
+      return issues;
     });
   }
   
-  function getEpicData(epic) {
+  function expandEpic(epic) {
     return getIssuesForEpic(epic.key)
       .then(function(issues) {
-        return {
-          epic: epic,
-          issues: issues
-        };
+        epic.issues = issues;
+        return epic;
       })
   }
   
@@ -96,7 +125,7 @@ $(function() {
       .then(function (epics) {
         return Q.all(
           _(epics).map(function(epic) {
-            return getEpicData(epic);
+            return expandEpic(epic);
           }).value()
         );
       });
@@ -151,15 +180,21 @@ $(function() {
       var escapedKey = Handlebars.Utils.escapeExpression(this.key);
       return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
     });
-    var epicRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><th>{{fields.summary}}</th></tr>");
-    var issueRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><td>{{fields.summary}}</td></tr>");
+    Handlebars.registerHelper('started_date', function() {
+      if (this.startedDate) {
+        var dateString = Handlebars.Utils.escapeExpression(this.startedDate.toString());
+        return new Handlebars.SafeString(dateString);
+      }
+    });
+    var epicRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><th>{{fields.summary}}</th><th></th></tr>");
+    var issueRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><td>{{fields.summary}}</td><td>{{started_date}}</td></tr>");
     
     getProjectData()
       .then(function(data) {
-        _(data).each(function(epicData) {
-          issuesTable.append(epicRowTemplate(epicData.epic));          
-          _(epicData.issues).each(function(issue) {
-            issuesTable.append(issueRowTemplate(issue));                      
+        _(data).each(function(epic) {
+          issuesTable.append(epicRowTemplate(epic));          
+          _(epic.issues).each(function(issue) {
+            issuesTable.append(issueRowTemplate(issue));                    
           });
         });
         // _(data.issues).each(function(issue) {
