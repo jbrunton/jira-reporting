@@ -3,6 +3,7 @@ var $ = require('jquery');
 var _ = require('lodash');
 var Q = require('q');
 var Handlebars = require('handlebars');
+var moment = require('moment');
 
 $(function() {
   var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
@@ -82,7 +83,7 @@ $(function() {
     }).then(function(issues) {
       var issues = _(issues).map(function(issue) {
         _(issue.changelog.histories).map(function(entry) {
-          entry.created = new Date(entry.created);
+          entry.created = moment(entry.created);
           return entry;
         });
         issue.startedDate = getIssueStartedDate(issue);
@@ -182,7 +183,7 @@ $(function() {
     });
     Handlebars.registerHelper('started_date', function() {
       if (this.startedDate) {
-        var dateString = Handlebars.Utils.escapeExpression(this.startedDate.toString());
+        var dateString = Handlebars.Utils.escapeExpression(this.startedDate.format('MMMM Do YYYY, h:mm:ss a'));
         return new Handlebars.SafeString(dateString);
       }
     });
