@@ -2,6 +2,7 @@ var JiraClient = require('./jira_client');
 var $ = require('jquery');
 var _ = require('lodash');
 var Q = require('q');
+var Handlebars = require('handlebars');
 
 $(function() {
   var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
@@ -146,13 +147,19 @@ $(function() {
     var issuesTable = $('#ghx-chart-panel-content table#jira-reporting-issues');
     var sprintsTable = $('#ghx-chart-panel-content table#jira-reporting-sprints');
     
+    Handlebars.registerHelper('link_to', function() {
+      var escapedKey = Handlebars.Utils.escapeExpression(this.key);
+      return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
+    });
+    var epicRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><th>{{fields.summary}}</th></tr>");
+    var issueRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><td>{{fields.summary}}</td></tr>");
+    
     getProjectData()
       .then(function(data) {
         _(data).each(function(epicData) {
-          issuesTable.append("<tr><th>" + epicData.epic.key + "</th><th>" + epicData.epic.fields.summary + "</th></tr>");          
+          issuesTable.append(epicRowTemplate(epicData.epic));          
           _(epicData.issues).each(function(issue) {
-            var issueHref = "/browse/" + issue.key;
-            issuesTable.append("<tr><td><a href='" + issueHref + "'>" + issue.key + "</a></td><td>" + issue.fields.summary + "</td></tr>");                      
+            issuesTable.append(issueRowTemplate(issue));                      
           });
         });
         // _(data.issues).each(function(issue) {
