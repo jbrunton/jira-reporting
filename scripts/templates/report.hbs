@@ -5,6 +5,7 @@
     <th>Summary</th>
     <th>Started</th>
     <th>Completed</th>
+    <th>Cycle Time</th>
   </tr>
 
   {{#each epics}}
@@ -14,6 +15,7 @@
       <th>{{fields.summary}}</th>
       <th>{{date startedDate}}</th>
       <th>{{date completedDate}}</th>
+      <th>{{cycle_time}}</th>
     </tr>
   
     {{#each issues}}
@@ -23,6 +25,7 @@
         <td>{{fields.summary}}</td>
         <td>{{date startedDate}}</td>
         <td>{{date completedDate}}</td>
+        <td>{{cycle_time}}</td>
       </tr>
     
     {{/each}}

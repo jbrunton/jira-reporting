@@ -161,6 +161,12 @@ $(function() {
         return new Handlebars.SafeString(dateString);
       }
     });
+    Handlebars.registerHelper('cycle_time', function() {
+      if (this.startedDate && this.completedDate) {
+        var diffString = Handlebars.Utils.escapeExpression(this.startedDate.from(this.completedDate, true));
+        return new Handlebars.SafeString(diffString);
+      }
+    });
 
     var reportTemplate = require("./templates/report.hbs");
     
