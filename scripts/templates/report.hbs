@@ -10,19 +10,19 @@
   {{#each epics}}
 
     <tr>
-      <td>{{link_to}}</td>
+      <td>{{issue_link}}</td>
       <th>{{fields.summary}}</th>
-      <th>{{started_date}}</th>
-      <th>{{completed_date}}</th>
+      <th>{{date startedDate}}</th>
+      <th>{{date completedDate}}</th>
     </tr>
   
     {{#each issues}}
     
       <tr>
-        <td>{{link_to}}</td>
+        <td>{{issue_link}}</td>
         <td>{{fields.summary}}</td>
-        <td>{{started_date}}</td>
-        <td>{{completed_date}}</td>
+        <td>{{date startedDate}}</td>
+        <td>{{date completedDate}}</td>
       </tr>
     
     {{/each}}

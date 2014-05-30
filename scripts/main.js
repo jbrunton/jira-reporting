@@ -151,19 +151,13 @@ $(function() {
     $('#ghx-chart-panel-content')
       .empty();
     
-    Handlebars.registerHelper('link_to', function() {
+    Handlebars.registerHelper('issue_link', function() {
       var escapedKey = Handlebars.Utils.escapeExpression(this.key);
       return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
     });
-    Handlebars.registerHelper('started_date', function() {
-      if (this.startedDate) {
-        var dateString = Handlebars.Utils.escapeExpression(this.startedDate.format('MMMM Do YYYY, h:mm:ss a'));
-        return new Handlebars.SafeString(dateString);
-      }
-    });
-    Handlebars.registerHelper('completed_date', function() {
-      if (this.completedDate) {
-        var dateString = Handlebars.Utils.escapeExpression(this.completedDate.format('MMMM Do YYYY, h:mm:ss a'));
+    Handlebars.registerHelper('date', function(date) {
+      if (date) {
+        var dateString = Handlebars.Utils.escapeExpression(date.format('MMMM Do YYYY, h:mm:ss a'));
         return new Handlebars.SafeString(dateString);
       }
     });
