@@ -46,7 +46,7 @@ module.exports = function(grunt) {
     
     watch: {
       scripts: {
-        files: ['Gruntfile.js', 'manifest.json', 'scripts/**/*.js', 'test/**/*.js'],
+        files: ['Gruntfile.js', 'manifest.json', 'scripts/**/*.js', 'scripts/**/*.hbs', 'test/**/*.js'],
         tasks: ['copy', 'browserify', 'jasmine'],
         options: {
           spawn: false,

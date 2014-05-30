@@ -83,21 +83,16 @@ $(function() {
             return expandEpic(epic);
           }).value()
         );
+      }).then(function(epics) {
+        return {
+          epics: epics
+        };
       });
-  }
-
-  function getProjectData() {
-    return generateReportData();
   }
   
   function renderReport() {
     $('#ghx-chart-panel-content')
-      .empty()
-      .append("<table id='jira-reporting-sprints' class='aui'></table>")
-      .append("<table id='jira-reporting-issues' class='aui'></table>");
-      
-    var issuesTable = $('#ghx-chart-panel-content table#jira-reporting-issues');
-    var sprintsTable = $('#ghx-chart-panel-content table#jira-reporting-sprints');
+      .empty();
     
     Handlebars.registerHelper('link_to', function() {
       var escapedKey = Handlebars.Utils.escapeExpression(this.key);
@@ -109,17 +104,13 @@ $(function() {
         return new Handlebars.SafeString(dateString);
       }
     });
-    var epicRowTemplate = require("./templates/epic_table_row.hbs");
-    var issueRowTemplate = require("./templates/issue_table_row.hbs");
+
+    var reportTemplate = require("./templates/report.hbs");
     
-    getProjectData()
-      .then(function(data) {
-        _(data).each(function(epic) {
-          issuesTable.append(epicRowTemplate(epic));          
-          _(epic.issues).each(function(issue) {
-            issuesTable.append(issueRowTemplate(issue));                    
-          });
-        });      
+    generateReportData()
+      .then(function(reportData) {
+        $('#ghx-chart-panel-content')
+          .append(reportTemplate(reportData));
       });
   }
 
