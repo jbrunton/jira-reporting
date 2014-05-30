@@ -7,28 +7,6 @@ var moment = require('moment');
 
 $(function() {
   var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
-  //   $.ajax({
-  //  type: 'GET',
-  //  async: false,
-  //  url: 'https://jbrunton.atlassian.net/rest/api/2/field/',
-  //  contentType: "application/json",
-  //  error: function() {
-  //    alert('failure');
-  //  },
-  //  success: function(items) {
-  //    console.log(items);
-  //  }
-  // });
-  
-
-
-  // $(".window-wrapper").on('DOMNodeInserted', function() {
-  //   // $('#ghx-chart-nav')
-  //   //   .append("<li data-tooltip="Foo" original-title=""><a href="#">Jira Reporting</a></li>");
-  //   if ($('#ghx-chart-nav').length > 0) {
-  //     alert('');
-  //   }
-  // });
   
   function getSprintFieldId() {
     return jiraClient.getResourceByName('field', 'Sprint')
@@ -70,7 +48,7 @@ $(function() {
       });      
     });
     if (startedTransitions.any()) {
-      return startedTransitions.first().created;
+      return moment(startedTransitions.first().created);
     } else {
       return null;
     }
@@ -82,21 +60,9 @@ $(function() {
       expand: ['changelog']
     }).then(function(issues) {
       var issues = _(issues).map(function(issue) {
-        _(issue.changelog.histories).map(function(entry) {
-          entry.created = moment(entry.created);
-          return entry;
-        });
         issue.startedDate = getIssueStartedDate(issue);
         return issue;
-        //issue.foo = bar;
       }).value();
-      /*_(issues).each(function(issue) {
-        _(issue.changelog.histories).map(function(entry) {
-          entry.created = new Date(entry.created);
-          return entry;
-        });
-        issue.started = getIssueStartedDate(issue);
-      });*/
       return issues;
     });
   }
@@ -109,18 +75,6 @@ $(function() {
       })
   }
   
-  // function getIssuesByEpic(epics) {
-  //   return Q.all(_(epics).map(function(epic) {
-  //     return getIssuesForEpic(epic)
-  //       .then(function(issues) {
-  //         return {
-  //           epic: epic,
-  //           issues: issues
-  //         };
-  //       });
-  //   }));
-  // }
-  
   function generateReportData() {
     return getProjectEpics()
       .then(function (epics) {
@@ -131,41 +85,9 @@ $(function() {
         );
       });
   }
-  
-  // function generateReportData(issues, sprintFieldId) {
-  //   var sprintIds = _(issues)
-  //     .reduce(function(sprintIds, issue) {
-  //       return sprintIds.concat(issue.fields[sprintFieldId] || []);
-  //     }, []);
-  //   
-  //   var sprints = _(_.uniq(sprintIds))
-  //     .map(function(sprintId) {
-  //       var sprintName = /name=((\w|\s)+)/.exec(sprintId)[1];
-  //       var sprintIssues = _(issues).filter(function(issue) {
-  //         return _(issue.fields[sprintFieldId])
-  //           .contains(sprintId);
-  //       });
-  //       return {
-  //         id: sprintId,
-  //         name: sprintName,
-  //         issues: sprintIssues
-  //       };
-  //     });
-  //   
-  //   return {
-  //     sprints: sprints,
-  //     issues: issues
-  //   };
-  // }
-  
+
   function getProjectData() {
     return generateReportData();
-    /*return Q.all([
-      getProjectEpics(),
-      getSprintFieldId()
-    ]).spread(function(issues, sprintFieldId) {
-      return generateReportData(issues, sprintFieldId);      
-    });*/
   }
   
   function renderReport() {
@@ -197,16 +119,7 @@ $(function() {
           _(epic.issues).each(function(issue) {
             issuesTable.append(issueRowTemplate(issue));                    
           });
-        });
-        // _(data.issues).each(function(issue) {
-        //   issuesTable.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
-        // });        
-        // _(data.sprints).each(function(sprint) {
-        //   sprintsTable.append("<tr><th colspan='2'>" + sprint.name + "</th></tr>");
-        //   _(sprint.issues).each(function(issue) {
-        //     sprintsTable.append("<tr><td>" + issue.key + "</td><td>" + issue.fields.summary + "</td></tr>");
-        //   });
-        // });        
+        });      
       });
   }
 
