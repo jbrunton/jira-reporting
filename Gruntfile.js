@@ -19,21 +19,20 @@ module.exports = function(grunt) {
     },
     
     browserify: {
+      options: {
+        transform: ['hbsfy'],
+        bundleOptions: {
+          debug: true
+        }
+      },
       debug: {
         src: ['scripts/**.js', 'scripts/**.hbs'],
         dest: 'build/main.js',
-        options: {
-          transform: ['hbsfy'],
-          bundleOptions: {
-            debug: true
-          }
-        }        
       },
       release: {
         src: ['scripts/**.js', 'scripts/**.hbs'],
         dest: 'build/main.js',
         options: {
-          transform: ['hbsfy'],
           bundleOptions: {
             debug: false
           }
@@ -41,13 +40,7 @@ module.exports = function(grunt) {
       },
       test: {
         src: ['test/**_spec.js'],
-        dest: 'build/test.js',
-        options: {
-          transform: ['hbsfy'],
-          bundleOptions: {
-            debug: true
-          }
-        }
+        dest: 'build/test.js'
       }
     },
     

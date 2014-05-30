@@ -121,8 +121,6 @@ $(function() {
           });
         });      
       });
-      
-      $('#ghx-chart-panel-content').append(template());
   }
 
   $('#ghx-chart-nav')
