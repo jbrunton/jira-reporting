@@ -75,6 +75,20 @@ $(function() {
     }
   }
   
+  function getEpicStartedDate(epic) {
+    var startedDate = _(epic.issues)
+      .map(function(issue) {
+        return issue.startedDate;
+      })
+      .compact()
+      .min(function(d1, d2) {
+        return d1.isBefore(d2);
+      })
+      .value();
+
+    return startedDate;
+  }
+  
   function getIssuesForEpic(epicKey) {
     return jiraClient.search({
       query: "cf[10008]=" + epicKey,
@@ -93,6 +107,7 @@ $(function() {
     return getIssuesForEpic(epic.key)
       .then(function(issues) {
         epic.issues = issues;
+        epic.startedDate = getEpicStartedDate(epic);
         return epic;
       })
   }
