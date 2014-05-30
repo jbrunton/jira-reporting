@@ -4,6 +4,7 @@
     <th>Issue</th>
     <th>Summary</th>
     <th>Started</th>
+    <th>Completed</th>
   </tr>
 
   {{#each epics}}
@@ -11,6 +12,7 @@
     <tr>
       <td>{{link_to}}</td>
       <th>{{fields.summary}}</th>
+      <th></th>
       <th></th>
     </tr>
   
@@ -20,6 +22,7 @@
         <td>{{link_to}}</td>
         <td>{{fields.summary}}</td>
         <td>{{started_date}}</td>
+        <td>{{completed_date}}</td>
       </tr>
     
     {{/each}}

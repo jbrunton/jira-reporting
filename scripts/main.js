@@ -41,14 +41,35 @@ $(function() {
       });
   }
   
+  function isStatusTransition(item) {
+    return item.field == "status";
+  }
+  
   function getIssueStartedDate(issue) {
-    var startedTransitions = _(issue.changelog.histories).filter(function(entry) {
-      return _(entry.items).any(function(item) {
-        return item.field == "status" && item.toString == "In Progress";
-      });      
-    });
+    var startedTransitions = _(issue.changelog.histories)
+      .filter(function(entry) {
+        return _(entry.items).any(function(item) {
+          return isStatusTransition(item) && item.toString == "In Progress";
+        });      
+      });
+    
     if (startedTransitions.any()) {
       return moment(startedTransitions.first().created);
+    } else {
+      return null;
+    }
+  }
+  
+  function getIssueCompletedDate(issue) {
+    var lastTransition = _(issue.changelog.histories)
+      .filter(function(entry) {
+        return _(entry.items)
+          .any(isStatusTransition);      
+      }).last();
+    
+    if (lastTransition && _(lastTransition.items)
+      .find(isStatusTransition).toString == "Done") {
+      return moment(lastTransition.created);
     } else {
       return null;
     }
@@ -61,6 +82,7 @@ $(function() {
     }).then(function(issues) {
       var issues = _(issues).map(function(issue) {
         issue.startedDate = getIssueStartedDate(issue);
+        issue.completedDate = getIssueCompletedDate(issue);
         return issue;
       }).value();
       return issues;
@@ -101,6 +123,12 @@ $(function() {
     Handlebars.registerHelper('started_date', function() {
       if (this.startedDate) {
         var dateString = Handlebars.Utils.escapeExpression(this.startedDate.format('MMMM Do YYYY, h:mm:ss a'));
+        return new Handlebars.SafeString(dateString);
+      }
+    });
+    Handlebars.registerHelper('completed_date', function() {
+      if (this.completedDate) {
+        var dateString = Handlebars.Utils.escapeExpression(this.completedDate.format('MMMM Do YYYY, h:mm:ss a'));
         return new Handlebars.SafeString(dateString);
       }
     });
