@@ -81,12 +81,31 @@ $(function() {
         return issue.startedDate;
       })
       .compact()
-      .min(function(d1, d2) {
-        return d1.isBefore(d2);
+      .min(function(date) {
+        return date.unix();
       })
       .value();
 
     return startedDate;
+  }
+  
+  function getEpicCompletedDate(epic) {
+    var issueCompletedDates = _(epic.issues)
+      .map(function(issue) {
+        return issue.completedDate;
+      });
+      
+    if (issueCompletedDates.all()) {
+      var completedDate = issueCompletedDates
+        .max(function(date) {
+          return date.unix();
+        })
+        .value();
+      
+      return completedDate;
+    } else {
+      return null;
+    }
   }
   
   function getIssuesForEpic(epicKey) {
@@ -108,6 +127,7 @@ $(function() {
       .then(function(issues) {
         epic.issues = issues;
         epic.startedDate = getEpicStartedDate(epic);
+        epic.completedDate = getEpicCompletedDate(epic);
         return epic;
       })
   }
