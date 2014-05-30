@@ -2,7 +2,7 @@ var JiraClient = require('./jira_client');
 var $ = require('jquery');
 var _ = require('lodash');
 var Q = require('q');
-var Handlebars = require('handlebars');
+var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
 
 $(function() {
@@ -109,8 +109,8 @@ $(function() {
         return new Handlebars.SafeString(dateString);
       }
     });
-    var epicRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><th>{{fields.summary}}</th><th></th></tr>");
-    var issueRowTemplate = Handlebars.compile("<tr><td>{{link_to}}</td><td>{{fields.summary}}</td><td>{{started_date}}</td></tr>");
+    var epicRowTemplate = require("./templates/epic_table_row.hbs");
+    var issueRowTemplate = require("./templates/issue_table_row.hbs");
     
     getProjectData()
       .then(function(data) {
@@ -121,6 +121,8 @@ $(function() {
           });
         });      
       });
+      
+      $('#ghx-chart-panel-content').append(template());
   }
 
   $('#ghx-chart-nav')

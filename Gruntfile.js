@@ -1,37 +1,49 @@
 module.exports = function(grunt) {
-
+  
   grunt.initConfig({
     jasmine: {
       test: {
-        src: 'build/main.js',
+        src: 'build/test.js',
         options: {
-          specs: 'build/test.js',
-          outfile: 'build/test/SpecRunner.html'
+          outfile: 'build/test/SpecRunner.html',
+          keepRunner: true
         }
       }
     },
     
     copy: {
-      main: {
+      manifest: {
         src: 'manifest.json',
         dest: 'build/'
       }
     },
     
     browserify: {
-      release: {
-        src: ['scripts/*.js'],
+      debug: {
+        src: ['scripts/**.js', 'scripts/**.hbs'],
         dest: 'build/main.js',
         options: {
+          transform: ['hbsfy'],
           bundleOptions: {
             debug: true
+          }
+        }        
+      },
+      release: {
+        src: ['scripts/**.js', 'scripts/**.hbs'],
+        dest: 'build/main.js',
+        options: {
+          transform: ['hbsfy'],
+          bundleOptions: {
+            debug: false
           }
         }
       },
       test: {
-        src: 'test/*_spec.js',
+        src: ['test/**_spec.js'],
         dest: 'build/test.js',
         options: {
+          transform: ['hbsfy'],
           bundleOptions: {
             debug: true
           }
@@ -41,12 +53,12 @@ module.exports = function(grunt) {
     
     watch: {
       scripts: {
-        files: ['scripts/**/*.js', 'test/**/*.js'],
-        tasks: ['browserify', 'jasmine'],
+        files: ['Gruntfile.js', 'manifest.json', 'scripts/**/*.js', 'test/**/*.js'],
+        tasks: ['copy', 'browserify', 'jasmine'],
         options: {
           spawn: false,
-        },
-      },
+        }
+      }
     },
     
     shell: {
@@ -63,7 +75,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   
   grunt.registerTask('test', ['browserify:test', 'jasmine']);
-  grunt.registerTask('test:debug', ['copy:main', 'browserify:test', 'jasmine:test:build', 'shell:debug']);
-  grunt.registerTask('build', ['copy:main', 'browserify:release']);
+  grunt.registerTask('test:debug', ['browserify:test', 'jasmine:test:build', 'shell:debug']);
+  grunt.registerTask('build', ['copy', 'browserify:release']);
   
 };
