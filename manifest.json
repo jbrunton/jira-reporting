@@ -12,7 +12,7 @@
 
 	"content_scripts": [
 		{
-		  "matches": ["https://jbrunton.atlassian.net/secure/RapidBoard.jspa?*view=reporting*"],
+		  "matches": ["https://*/secure/RapidBoard.jspa?*view=reporting*"],
 			"js": ["main.js"]
 		}
 	]

@@ -6,10 +6,17 @@ var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
 
 $(function() {
-  var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
+  var jiraClient = new JiraClient(window.location.origin);
   
   function getSprintFieldId() {
     return jiraClient.getResourceByName('field', 'Sprint')
+      .then(function(field) {
+        return field.id;
+      });
+  }
+  
+  function getEpicFieldId() {
+    return jiraClient.getResourceByName('field', 'Epic Link')
       .then(function(field) {
         return field.id;
       });
@@ -24,9 +31,15 @@ $(function() {
     });
   }
   
-  function getCurrentRapidViewIssues() {
+  // function getCurrentRapidViewIssues() {
+  //   return getCurrentRapidView().then(function(view) {
+  //     return jiraClient.search(view.filter.query);
+  //   });
+  // }
+  
+  function getCurrentRapidViewEpics() {
     return getCurrentRapidView().then(function(view) {
-      return jiraClient.search(view.filter.query);
+      return jiraClient.search("issuetype=Epic AND " + view.filter.query);
     });
   }
   
@@ -35,10 +48,11 @@ $(function() {
   }
   
   function getProjectEpics() {
-    return getCurrentRapidViewIssues()
-      .then(function(issues) {
-        return _(issues).filter(isEpic);
-      });
+    return getCurrentRapidViewEpics();
+    // return getCurrentRapidViewIssues()
+    //   .then(function(issues) {
+    //     return _(issues).filter(isEpic);
+    //   });
   }
   
   function isStatusTransition(item) {
@@ -76,17 +90,23 @@ $(function() {
   }
   
   function getEpicStartedDate(epic) {
-    var startedDate = _(epic.issues)
+    var issueStartedDates = _(epic.issues)
       .map(function(issue) {
         return issue.startedDate;
       })
-      .compact()
-      .min(function(date) {
-        return date.unix();
-      })
-      .value();
-
-    return startedDate;
+      .compact();
+    
+    if (issueStartedDates.any()) {
+      var startedDate = issueStartedDates
+        .min(function(date) {
+          return date.unix();
+        })
+        .value();
+      
+      return startedDate;
+    } else {
+      return null
+    }
   }
   
   function getEpicCompletedDate(epic) {
@@ -110,7 +130,7 @@ $(function() {
   
   function getIssuesForEpic(epicKey) {
     return jiraClient.search({
-      query: "cf[10008]=" + epicKey,
+      query: "cf[10800]=" + epicKey,
       expand: ['changelog']
     }).then(function(issues) {
       var issues = _(issues).map(function(issue) {
@@ -133,18 +153,24 @@ $(function() {
   }
   
   function generateReportData() {
-    return getProjectEpics()
-      .then(function (epics) {
-        return Q.all(
-          _(epics).map(function(epic) {
-            return expandEpic(epic);
-          }).value()
-        );
-      }).then(function(epics) {
-        return {
-          epics: epics
-        };
-      });
+    // return getProjectEpics()
+    //   .then(function (epics) {
+    //     return Q.all(
+    //       _(epics).map(function(epic) {
+    //         return expandEpic(epic);
+    //       }).value()
+    //     );
+    //   }).then(function(epics) {
+    //     return {
+    //       epics: epics
+    //     };
+    //   });
+    
+    return getProjectEpics().then(function(epics) {
+      return {
+        epics: epics
+      };
+    })
   }
   
   function renderReport() {
@@ -205,13 +231,13 @@ $(function() {
   
   layoutMenu();
   
-  Q.all([
-    getSprintFieldId(),
-    getCurrentRapidViewIssues()
-  ]).spread(function(sprintFieldId, issues) {
-    console.log('sprintField: ' + sprintField);
-    console.log('issues: ' + issues);
-  });
+  // Q.all([
+  //   getSprintFieldId(),
+  //   getCurrentRapidViewIssues()
+  // ]).spread(function(sprintFieldId, issues) {
+  //   console.log('sprintField: ' + sprintField);
+  //   console.log('issues: ' + issues);
+  // });
 });
 
   
