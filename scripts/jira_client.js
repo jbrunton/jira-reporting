@@ -1,3 +1,6 @@
+var $ = require('jquery');
+var Q = require('q');
+
 function JiraClient(domain) {
   if (!domain) {
     throw "Expected domain to be specified.";
@@ -81,3 +84,5 @@ JiraClient.prototype.getRapidViews = function() {
 	});
 	return deferred.promise;
 }
+
+module.exports = JiraClient;
