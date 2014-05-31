@@ -148,8 +148,11 @@ $(function() {
   }
   
   function renderReport() {
-    $('#ghx-chart-panel-content')
-      .empty();
+    
+    _(['message', 'intro', 'header', 'content'])
+      .each(function(divName) {
+        $('#ghx-chart-' + divName).empty();
+      });
     
     Handlebars.registerHelper('issue_link', function() {
       var escapedKey = Handlebars.Utils.escapeExpression(this.key);
@@ -172,14 +175,35 @@ $(function() {
     
     generateReportData()
       .then(function(reportData) {
-        $('#ghx-chart-panel-content')
+        $('#ghx-chart-content')
           .append(reportTemplate(reportData));
       });
   }
 
-  $('#ghx-chart-nav')
-    .append("<li id='jira-reporting-link' data-tooltip='Foo' original-title=''><a href='#'>Jira Reporting</a></li>")
-    .click(renderReport);
+  $("#ghx-chart-nav").on('DOMNodeInserted', layoutMenu);
+      
+  function layoutMenu() {
+    
+    function jiraReportingClicked() {
+      var selectedClass = 'aui-nav-selected';
+      var menuItemSelector = '#ghx-chart-nav li';
+      $(menuItemSelector).removeClass(selectedClass);
+      $(this).closest(menuItemSelector).addClass(selectedClass);
+      renderReport();
+    }
+    
+    var jiraReportingLink = $('#jira-reporting-link');
+    if (!jiraReportingLink.size()) {
+      $("<li id='jira-reporting-link' data-tooltip='Foo' original-title=''><a href='#'>Jira Reporting</a></li>")
+        .click(jiraReportingClicked)
+        .appendTo('#ghx-chart-nav');
+    } else {
+      jiraReportingLink
+        .appendTo('#ghx-chart-nav');
+    }
+  }  
+  
+  layoutMenu();
   
   Q.all([
     getSprintFieldId(),
