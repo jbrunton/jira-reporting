@@ -234,8 +234,12 @@ $(function() {
         });
   }
 
-  var chartMenu = new ChartMenu(renderReport);
-  chartMenu.init();
+  var chartMenu = new ChartMenu();
+  chartMenu.init({
+    items: [
+      { id: 'issues-by-epic', title: 'Issues By Epic', render: renderReport }
+    ]
+  });
   
   // Q.all([
   //   getSprintFieldId(),
