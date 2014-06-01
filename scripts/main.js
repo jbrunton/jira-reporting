@@ -245,8 +245,8 @@ $(function() {
       renderReport();
     }
     
-    var chartNev = $('#ghx-chart-nav');
-    if (chartNev.size()) {
+    var chartNav = $('#ghx-chart-nav');
+    if (chartNav.size()) {
       var jiraReportingLink = $('#jira-reporting-link');
       if (!jiraReportingLink.size()) {
         $("<li id='jira-reporting-link' original-title=''><a href='#'>Jira Reporting</a></li>")
