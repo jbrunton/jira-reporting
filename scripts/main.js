@@ -4,12 +4,20 @@ var _ = require('lodash');
 var Q = require('q');
 var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
+var Spinner = require('../vendor/spin');
 
 $(function() {
-  var jiraClient = new JiraClient('https://jbrunton.atlassian.net');
+  var jiraClient = new JiraClient(window.location.origin);
   
   function getSprintFieldId() {
     return jiraClient.getResourceByName('field', 'Sprint')
+      .then(function(field) {
+        return field.id;
+      });
+  }
+  
+  function getEpicFieldId() {
+    return jiraClient.getResourceByName('field', 'Epic Link')
       .then(function(field) {
         return field.id;
       });
@@ -24,9 +32,15 @@ $(function() {
     });
   }
   
-  function getCurrentRapidViewIssues() {
+  // function getCurrentRapidViewIssues() {
+  //   return getCurrentRapidView().then(function(view) {
+  //     return jiraClient.search(view.filter.query);
+  //   });
+  // }
+  
+  function getCurrentRapidViewEpics() {
     return getCurrentRapidView().then(function(view) {
-      return jiraClient.search(view.filter.query);
+      return jiraClient.search("issuetype=Epic AND " + view.filter.query);
     });
   }
   
@@ -35,10 +49,11 @@ $(function() {
   }
   
   function getProjectEpics() {
-    return getCurrentRapidViewIssues()
-      .then(function(issues) {
-        return _(issues).filter(isEpic);
-      });
+    return getCurrentRapidViewEpics();
+    // return getCurrentRapidViewIssues()
+    //   .then(function(issues) {
+    //     return _(issues).filter(isEpic);
+    //   });
   }
   
   function isStatusTransition(item) {
@@ -76,17 +91,23 @@ $(function() {
   }
   
   function getEpicStartedDate(epic) {
-    var startedDate = _(epic.issues)
+    var issueStartedDates = _(epic.issues)
       .map(function(issue) {
         return issue.startedDate;
       })
-      .compact()
-      .min(function(date) {
-        return date.unix();
-      })
-      .value();
-
-    return startedDate;
+      .compact();
+    
+    if (issueStartedDates.any()) {
+      var startedDate = issueStartedDates
+        .min(function(date) {
+          return date.unix();
+        })
+        .value();
+      
+      return startedDate;
+    } else {
+      return null
+    }
   }
   
   function getEpicCompletedDate(epic) {
@@ -133,18 +154,24 @@ $(function() {
   }
   
   function generateReportData() {
-    return getProjectEpics()
-      .then(function (epics) {
-        return Q.all(
-          _(epics).map(function(epic) {
-            return expandEpic(epic);
-          }).value()
-        );
-      }).then(function(epics) {
-        return {
-          epics: epics
-        };
-      });
+    // return getProjectEpics()
+    //   .then(function (epics) {
+    //     return Q.all(
+    //       _(epics).map(function(epic) {
+    //         return expandEpic(epic);
+    //       }).value()
+    //     );
+    //   }).then(function(epics) {
+    //     return {
+    //       epics: epics
+    //     };
+    //   });
+    
+    return getProjectEpics().then(function(epics) {
+      return {
+        epics: epics
+      };
+    })
   }
   
   function renderReport() {
@@ -171,12 +198,36 @@ $(function() {
       }
     });
 
-    var reportTemplate = require("./templates/report.hbs");
+    var tableTemplate = require("./templates/report.hbs");
+    var epicRowTemplate = require('./templates/epic_row.hbs');
+    var issueRowTemplate = require('./templates/issue_row.hbs');
+    var spinnerRowTemplate = require('./templates/spinner_row.hbs');
     
     generateReportData()
       .then(function(reportData) {
         $('#ghx-chart-content')
-          .append(reportTemplate(reportData));
+          .append(tableTemplate());
+
+        var table = $('#ghx-chart-content table');
+
+        _(reportData.epics)
+          .each(function(epic) {
+            var epicRow = $(epicRowTemplate(epic)).hide().appendTo(table);
+            var spinnerRow = $(spinnerRowTemplate(epic)).appendTo(table);
+
+            var opts = { length: 4, width: 3, radius: 6 };
+            var spinner = new Spinner(opts);
+            spinner.spin(spinnerRow.find('td.spinner-cell').get(0));
+            
+            expandEpic(epic).then(function(epic) {
+              _(epic.issues).each(function(issue) {                
+                var issueRow = $(issueRowTemplate(issue)).insertAfter(epicRow);
+              });
+              epicRow.replaceWith(epicRowTemplate(epic));
+              spinnerRow.remove();
+            });        
+          });          
+
       });
   }
 
@@ -205,13 +256,13 @@ $(function() {
   
   layoutMenu();
   
-  Q.all([
-    getSprintFieldId(),
-    getCurrentRapidViewIssues()
-  ]).spread(function(sprintFieldId, issues) {
-    console.log('sprintField: ' + sprintField);
-    console.log('issues: ' + issues);
-  });
+  // Q.all([
+  //   getSprintFieldId(),
+  //   getCurrentRapidViewIssues()
+  // ]).spread(function(sprintFieldId, issues) {
+  //   console.log('sprintField: ' + sprintField);
+  //   console.log('issues: ' + issues);
+  // });
 });
 
   

@@ -26,11 +26,11 @@ module.exports = function(grunt) {
         }
       },
       debug: {
-        src: ['scripts/**.js', 'scripts/**.hbs'],
+        src: ['vendor/**.js', 'scripts/**.js', 'scripts/**.hbs'],
         dest: 'build/main.js',
       },
       release: {
-        src: ['scripts/**.js', 'scripts/**.hbs'],
+        src: ['vendor/**.js', 'scripts/**.js', 'scripts/**.hbs'],
         dest: 'build/main.js',
         options: {
           bundleOptions: {
@@ -46,7 +46,7 @@ module.exports = function(grunt) {
     
     watch: {
       scripts: {
-        files: ['Gruntfile.js', 'manifest.json', 'scripts/**/*.js', 'scripts/**/*.hbs', 'test/**/*.js'],
+        files: ['Gruntfile.js', 'manifest.json', 'vendor/**.js', 'scripts/**/*.js', 'scripts/**/*.hbs', 'test/**/*.js'],
         tasks: ['copy', 'browserify:debug', 'browserify:test', 'jasmine'],
         options: {
           spawn: false,

@@ -8,27 +8,4 @@
     <th>Cycle Time</th>
   </tr>
 
-  {{#each epics}}
-
-    <tr>
-      <td>{{issue_link}}</td>
-      <th>{{fields.summary}}</th>
-      <th>{{date startedDate}}</th>
-      <th>{{date completedDate}}</th>
-      <th>{{cycle_time}}</th>
-    </tr>
-  
-    {{#each issues}}
-    
-      <tr>
-        <td>{{issue_link}}</td>
-        <td>{{fields.summary}}</td>
-        <td>{{date startedDate}}</td>
-        <td>{{date completedDate}}</td>
-        <td>{{cycle_time}}</td>
-      </tr>
-    
-    {{/each}}
-
-  {{/each}}
 </table>
