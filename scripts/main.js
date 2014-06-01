@@ -234,9 +234,9 @@ $(function() {
   }
 
   $("#ghx-chart-nav").on('DOMNodeInserted', layoutMenu);
+  $('#ghx-view-modes .aui-button').click(layoutMenu);
       
   function layoutMenu() {
-    
     function jiraReportingClicked() {
       var selectedClass = 'aui-nav-selected';
       var menuItemSelector = '#ghx-chart-nav li';
@@ -245,14 +245,17 @@ $(function() {
       renderReport();
     }
     
-    var jiraReportingLink = $('#jira-reporting-link');
-    if (!jiraReportingLink.size()) {
-      $("<li id='jira-reporting-link' data-tooltip='Foo' original-title=''><a href='#'>Jira Reporting</a></li>")
-        .click(jiraReportingClicked)
-        .appendTo('#ghx-chart-nav');
-    } else {
-      jiraReportingLink
-        .appendTo('#ghx-chart-nav');
+    var chartNev = $('#ghx-chart-nav');
+    if (chartNev.size()) {
+      var jiraReportingLink = $('#jira-reporting-link');
+      if (!jiraReportingLink.size()) {
+        $("<li id='jira-reporting-link' data-tooltip='Foo' original-title=''><a href='#'>Jira Reporting</a></li>")
+          .click(jiraReportingClicked)
+          .appendTo('#ghx-chart-nav');
+      } else {
+        jiraReportingLink
+          .appendTo('#ghx-chart-nav');
+      }
     }
   }  
   

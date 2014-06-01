@@ -12,7 +12,7 @@
 
 	"content_scripts": [
 		{
-		  "matches": ["https://*/secure/RapidBoard.jspa?*view=reporting*"],
+		  "matches": ["https://*/secure/RapidBoard.jspa?*"],
 			"js": ["main.js"]
 		}
 	]
