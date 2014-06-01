@@ -233,11 +233,16 @@ $(function() {
           });
         });
   }
+  
+  function renderEpicThroughput() {
+    
+  }
 
   var chartMenu = new ChartMenu();
   chartMenu.init({
     items: [
-      { id: 'issues-by-epic', title: 'Issues By Epic', render: renderReport }
+      { id: 'issues-by-epic', title: 'Issues By Epic', render: renderReport },
+      { id: 'epic-throughput', title: 'Epic Throughput', render: renderEpicThroughput }
     ]
   });
   

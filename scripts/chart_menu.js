@@ -25,8 +25,11 @@ ChartMenu.prototype.layout = function() {
           .click(clickHandlerFor(item))
           .appendTo('#ghx-chart-nav');        
       } else {
-        menuLink
-          .appendTo('#ghx-chart-nav');
+        var lastItem = chartNav.find('li').last();
+        if (lastItem.attr('id') != item.id) {
+          menuLink
+            .appendTo('#ghx-chart-nav');
+        }
       }
     });
   }  
