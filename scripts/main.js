@@ -16,10 +16,10 @@ $(function() {
       });
   }
   
-  function getEpicFieldId() {
+  function getEpicLinkFieldId() {
     return jiraClient.getResourceByName('field', 'Epic Link')
       .then(function(field) {
-        return field.id;
+        return field.schema.customId;
       });
   }
   
@@ -116,7 +116,9 @@ $(function() {
         return issue.completedDate;
       });
       
-    if (issueCompletedDates.all()) {
+    if (issueCompletedDates.any()
+      && issueCompletedDates.all())
+    {
       var completedDate = issueCompletedDates
         .max(function(date) {
           return date.unix();
@@ -129,22 +131,21 @@ $(function() {
     }
   }
   
-  function getIssuesForEpic(epicKey) {
+  function getIssuesForEpic(epicKey, epicLinkFieldId) {
     return jiraClient.search({
-      query: "cf[10008]=" + epicKey,
+      query: "cf[" + epicLinkFieldId + "]=" + epicKey,
       expand: ['changelog']
     }).then(function(issues) {
-      var issues = _(issues).map(function(issue) {
+      _(issues).each(function(issue) {
         issue.startedDate = getIssueStartedDate(issue);
         issue.completedDate = getIssueCompletedDate(issue);
-        return issue;
-      }).value();
+      });
       return issues;
     });
   }
   
-  function expandEpic(epic) {
-    return getIssuesForEpic(epic.key)
+  function expandEpic(epic, epicLinkFieldId) {
+    return getIssuesForEpic(epic.key, epicLinkFieldId)
       .then(function(issues) {
         epic.issues = issues;
         epic.startedDate = getEpicStartedDate(epic);
@@ -203,32 +204,33 @@ $(function() {
     var issueRowTemplate = require('./templates/issue_row.hbs');
     var spinnerRowTemplate = require('./templates/spinner_row.hbs');
     
-    generateReportData()
-      .then(function(reportData) {
-        $('#ghx-chart-content')
-          .append(tableTemplate());
+    getEpicLinkFieldId().then(function(epicLinkFieldId) {
+      generateReportData()
+        .then(function(reportData) {
+          $('#ghx-chart-content')
+            .append(tableTemplate());
 
-        var table = $('#ghx-chart-content table');
+          var table = $('#ghx-chart-content table');
 
-        _(reportData.epics)
-          .each(function(epic) {
-            var epicRow = $(epicRowTemplate(epic)).hide().appendTo(table);
-            var spinnerRow = $(spinnerRowTemplate(epic)).appendTo(table);
+          _(reportData.epics)
+            .each(function(epic) {
+              var epicRow = $(epicRowTemplate(epic)).hide().appendTo(table);
+              var spinnerRow = $(spinnerRowTemplate(epic)).appendTo(table);
 
-            var opts = { length: 4, width: 3, radius: 6 };
-            var spinner = new Spinner(opts);
-            spinner.spin(spinnerRow.find('td.spinner-cell').get(0));
+              var opts = { length: 4, width: 3, radius: 6 };
+              var spinner = new Spinner(opts);
+              spinner.spin(spinnerRow.find('td.spinner-cell').get(0));
             
-            expandEpic(epic).then(function(epic) {
-              _(epic.issues).each(function(issue) {                
-                var issueRow = $(issueRowTemplate(issue)).insertAfter(epicRow);
-              });
-              epicRow.replaceWith(epicRowTemplate(epic));
-              spinnerRow.remove();
-            });        
-          });          
-
-      });
+              expandEpic(epic, epicLinkFieldId).then(function(epic) {
+                _(epic.issues).each(function(issue) {                
+                  var issueRow = $(issueRowTemplate(issue)).insertAfter(epicRow);
+                });
+                epicRow.replaceWith(epicRowTemplate(epic));
+                spinnerRow.remove();
+              });        
+            });          
+          });
+        });
   }
 
   $("#ghx-chart-nav").on('DOMNodeInserted', layoutMenu);

@@ -1,5 +1,6 @@
 var $ = require('jquery');
 var Q = require('q');
+var _ = require('lodash');
 
 function JiraClient(domain) {
   if (!domain) {
