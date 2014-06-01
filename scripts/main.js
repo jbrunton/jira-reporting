@@ -249,7 +249,7 @@ $(function() {
     if (chartNev.size()) {
       var jiraReportingLink = $('#jira-reporting-link');
       if (!jiraReportingLink.size()) {
-        $("<li id='jira-reporting-link' data-tooltip='Foo' original-title=''><a href='#'>Jira Reporting</a></li>")
+        $("<li id='jira-reporting-link' original-title=''><a href='#'>Jira Reporting</a></li>")
           .click(jiraReportingClicked)
           .appendTo('#ghx-chart-nav');
       } else {
