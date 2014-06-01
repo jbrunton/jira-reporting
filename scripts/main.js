@@ -5,6 +5,7 @@ var Q = require('q');
 var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
 var Spinner = require('../vendor/spin');
+var ChartMenu = require('./chart_menu');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -233,33 +234,8 @@ $(function() {
         });
   }
 
-  $("#ghx-chart-nav").on('DOMNodeInserted', layoutMenu);
-  $('#ghx-view-modes .aui-button').click(layoutMenu);
-      
-  function layoutMenu() {
-    function jiraReportingClicked() {
-      var selectedClass = 'aui-nav-selected';
-      var menuItemSelector = '#ghx-chart-nav li';
-      $(menuItemSelector).removeClass(selectedClass);
-      $(this).closest(menuItemSelector).addClass(selectedClass);
-      renderReport();
-    }
-    
-    var chartNav = $('#ghx-chart-nav');
-    if (chartNav.size()) {
-      var jiraReportingLink = $('#jira-reporting-link');
-      if (!jiraReportingLink.size()) {
-        $("<li id='jira-reporting-link' original-title=''><a href='#'>Jira Reporting</a></li>")
-          .click(jiraReportingClicked)
-          .appendTo('#ghx-chart-nav');
-      } else {
-        jiraReportingLink
-          .appendTo('#ghx-chart-nav');
-      }
-    }
-  }  
-  
-  layoutMenu();
+  var chartMenu = new ChartMenu(renderReport);
+  chartMenu.init();
   
   // Q.all([
   //   getSprintFieldId(),
