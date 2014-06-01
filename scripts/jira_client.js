@@ -8,6 +8,8 @@ function JiraClient(domain) {
   }
   
   this._domain = domain;
+
+  _.bindAll(this);
 }
 
 JiraClient.prototype.getDomain = function() {
@@ -84,6 +86,14 @@ JiraClient.prototype.getRapidViews = function() {
 		}
 	});
 	return deferred.promise;
+}
+
+JiraClient.prototype.getRapidViewById = function(rapidViewId) {
+  return this.getRapidViews().then(function(views) {
+    return _(views).find(function(view) {
+      return view.id == rapidViewId;
+    });
+  });
 }
 
 module.exports = JiraClient;

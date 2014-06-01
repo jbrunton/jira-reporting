@@ -6,6 +6,7 @@ var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
 var Spinner = require('../vendor/spin');
 var ChartMenu = require('./chart_menu');
+var EpicDataset = require('./epic_dataset');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -235,7 +236,14 @@ $(function() {
   }
   
   function renderEpicThroughput() {
-    
+    getEpicLinkFieldId()
+      .then(function(epicLinkFieldId) {
+        var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+        var dataset = new EpicDataset(jiraClient, epicLinkFieldId);
+        dataset.load(rapidViewId, function(epic, epics) {
+          // alert('loaded ' + epic.key + ", from " + epics.length + ' epics');
+        });
+      });
   }
 
   var chartMenu = new ChartMenu();
