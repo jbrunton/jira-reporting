@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var Q = require('q');
 var _ = require('lodash');
+var RapidView = require('./rapid_view');
 
 function JiraClient(domain) {
   if (!domain) {
@@ -73,6 +74,7 @@ JiraClient.prototype.search = function(opts) {
 }
 
 JiraClient.prototype.getRapidViews = function() {
+  var self = this;
   var deferred = Q.defer();
   $.ajax({
 		type: 'GET',
@@ -82,7 +84,10 @@ JiraClient.prototype.getRapidViews = function() {
 			deferred.reject();
 		},
 		success: function(results) {
-			deferred.resolve(results.views);
+			deferred.resolve(
+			  _(results.views).map(function(view) {
+			    return new RapidView(self, view);
+			  }));
 		}
 	});
 	return deferred.promise;

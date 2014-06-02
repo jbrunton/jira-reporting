@@ -7,6 +7,7 @@ var moment = require('moment');
 var Spinner = require('../vendor/spin');
 var ChartMenu = require('./chart_menu');
 var EpicDataset = require('./epic_dataset');
+var Chart = require('./chart');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -245,14 +246,49 @@ $(function() {
         });
       });
   }
-
+  
+  function drawIssuesByEpic(target) {
+    var indicator = $('<div><p>Loading epics...</p></div>')
+      .appendTo(target);
+    
+    var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+    getEpicLinkFieldId()
+      .then(function(epicLinkFieldId) {
+        jiraClient.getRapidViewById(rapidViewId)
+          .then(function(view) {
+            view.getEpics()
+              .then(function(epics) {
+                var count = 0;
+                indicator.html('<p>Done.  Loaded 0 / ' + epics.length + ' epics.</p>');              
+                _(epics).each(function(epic) {
+                  epic.getIssues(epicLinkFieldId)
+                    .then(function(issues) {
+                      indicator.html('<p>Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.</p>');              
+                    });
+                });
+                // indicator.replaceWith('<p>Done.  Loaded ' + epics.length + ' epics.</p>');
+              });
+          });
+      });
+  }
+  
   var chartMenu = new ChartMenu();
-  chartMenu.init({
-    items: [
-      { id: 'issues-by-epic', title: 'Issues By Epic', render: renderReport },
-      { id: 'epic-throughput', title: 'Epic Throughput', render: renderEpicThroughput }
-    ]
-  });
+  chartMenu.configureCharts([
+    new Chart({
+      menuItemId: 'issues-by-epic',
+      title: 'Issues By Epic',
+      onDraw: drawIssuesByEpic
+    })
+  ]);
+  
+
+  // var chartMenu = new ChartMenu();
+  // chartMenu.init({
+  //   items: [
+  //     { id: 'issues-by-epic', title: 'Issues By Epic', render: renderReport },
+  //     { id: 'epic-throughput', title: 'Epic Throughput', render: renderEpicThroughput }
+  //   ]
+  // });
   
   // Q.all([
   //   getSprintFieldId(),
