@@ -248,8 +248,13 @@ $(function() {
   }
   
   function drawIssuesByEpic(target) {
-    var indicator = $('<div><p>Loading epics...</p></div>')
-      .appendTo(target);
+    var indicatorContainer = $('<ul><li id="spinner" style="position: relative; display: table-cell; width: 40px;"></li><li style="display: table-cell;"><p id="label">Loading epics...</p></li></ul>').appendTo(target);
+    var indicatorLabel = indicatorContainer.find('#label');
+    var indicatorSpinner = indicatorContainer.find('#spinner');
+    
+    var opts = { length: 4, width: 3, radius: 6 };
+    var spinner = new Spinner(opts);
+    spinner.spin(indicatorSpinner.first().get(0));
     
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
     getEpicLinkFieldId()
@@ -259,14 +264,17 @@ $(function() {
             view.getEpics()
               .then(function(epics) {
                 var count = 0;
-                indicator.html('<p>Done.  Loaded 0 / ' + epics.length + ' epics.</p>');              
-                _(epics).each(function(epic) {
-                  epic.getIssues(epicLinkFieldId)
-                    .then(function(issues) {
-                      indicator.html('<p>Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.</p>');              
-                    });
+                indicatorLabel.text('Done.  Loaded 0 / ' + epics.length + ' epics.');
+                Q.all(
+                  _(epics).map(function(epic) {
+                    return epic.getIssues(epicLinkFieldId)
+                      .then(function(issues) {
+                        indicatorLabel.text('Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.');              
+                      });
+                  }).value()
+                ).then(function() {
+                  indicatorContainer.remove();
                 });
-                // indicator.replaceWith('<p>Done.  Loaded ' + epics.length + ' epics.</p>');
               });
           });
       });
