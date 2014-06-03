@@ -249,6 +249,8 @@ $(function() {
     var indicator = new Indicator();
     indicator.display(target);
 
+    var table = $(tableTemplate()).appendTo(target);
+
     function drawEpics(epics) {
       var count = 0;
       indicator.setText('Done.  Loaded 0 / ' + epics.length + ' epics.');
