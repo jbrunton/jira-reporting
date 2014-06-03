@@ -8,6 +8,7 @@ var Spinner = require('../vendor/spin');
 var ChartMenu = require('./chart_menu');
 var EpicDataset = require('./epic_dataset');
 var Chart = require('./chart');
+var Indicator = require('./indicator');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -19,12 +20,7 @@ $(function() {
       });
   }
   
-  function getEpicLinkFieldId() {
-    return jiraClient.getResourceByName('field', 'Epic Link')
-      .then(function(field) {
-        return field.schema.customId;
-      });
-  }
+
   
   function getCurrentRapidView() {
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
@@ -177,6 +173,28 @@ $(function() {
       };
     })
   }
+
+  Handlebars.registerHelper('issue_link', function() {
+    var escapedKey = Handlebars.Utils.escapeExpression(this.key);
+    return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
+  });
+  Handlebars.registerHelper('date', function(date) {
+    if (date) {
+      var dateString = Handlebars.Utils.escapeExpression(date.format('MMMM Do YYYY, h:mm:ss a'));
+      return new Handlebars.SafeString(dateString);
+    }
+  });
+  Handlebars.registerHelper('cycle_time', function() {
+    if (this.startedDate && this.completedDate) {
+      var diffString = Handlebars.Utils.escapeExpression(this.startedDate.from(this.completedDate, true));
+      return new Handlebars.SafeString(diffString);
+    }
+  });
+
+  var tableTemplate = require("./templates/report.hbs");
+  var epicRowTemplate = require('./templates/epic_row.hbs');
+  var issueRowTemplate = require('./templates/issue_row.hbs');
+  var spinnerRowTemplate = require('./templates/spinner_row.hbs');
   
   function renderReport() {
     
@@ -185,29 +203,9 @@ $(function() {
         $('#ghx-chart-' + divName).empty();
       });
     
-    Handlebars.registerHelper('issue_link', function() {
-      var escapedKey = Handlebars.Utils.escapeExpression(this.key);
-      return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
-    });
-    Handlebars.registerHelper('date', function(date) {
-      if (date) {
-        var dateString = Handlebars.Utils.escapeExpression(date.format('MMMM Do YYYY, h:mm:ss a'));
-        return new Handlebars.SafeString(dateString);
-      }
-    });
-    Handlebars.registerHelper('cycle_time', function() {
-      if (this.startedDate && this.completedDate) {
-        var diffString = Handlebars.Utils.escapeExpression(this.startedDate.from(this.completedDate, true));
-        return new Handlebars.SafeString(diffString);
-      }
-    });
 
-    var tableTemplate = require("./templates/report.hbs");
-    var epicRowTemplate = require('./templates/epic_row.hbs');
-    var issueRowTemplate = require('./templates/issue_row.hbs');
-    var spinnerRowTemplate = require('./templates/spinner_row.hbs');
     
-    getEpicLinkFieldId().then(function(epicLinkFieldId) {
+    jiraClient.getEpicLinkFieldId().then(function(epicLinkFieldId) {
       generateReportData()
         .then(function(reportData) {
           $('#ghx-chart-content')
@@ -237,7 +235,7 @@ $(function() {
   }
   
   function renderEpicThroughput() {
-    getEpicLinkFieldId()
+    jiraClient.getEpicLinkFieldId()
       .then(function(epicLinkFieldId) {
         var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
         var dataset = new EpicDataset(jiraClient, epicLinkFieldId);
@@ -248,35 +246,29 @@ $(function() {
   }
   
   function drawIssuesByEpic(target) {
-    var indicatorContainer = $('<ul><li id="spinner" style="position: relative; display: table-cell; width: 40px;"></li><li style="display: table-cell;"><p id="label">Loading epics...</p></li></ul>').appendTo(target);
-    var indicatorLabel = indicatorContainer.find('#label');
-    var indicatorSpinner = indicatorContainer.find('#spinner');
-    
-    var opts = { length: 4, width: 3, radius: 6 };
-    var spinner = new Spinner(opts);
-    spinner.spin(indicatorSpinner.first().get(0));
-    
+    var indicator = new Indicator();
+    indicator.display(target);
+
+    function drawEpics(epics) {
+      var count = 0;
+      indicator.setText('Done.  Loaded 0 / ' + epics.length + ' epics.');
+      Q.all(
+        _(epics).map(function(epic) {
+          return epic.getIssues()
+            .then(function(issues) {
+              indicator.setText('Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.');
+            });
+        }).value()
+      ).then(function() {
+        indicator.remove();
+      });
+    }
+
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
-    getEpicLinkFieldId()
-      .then(function(epicLinkFieldId) {
-        jiraClient.getRapidViewById(rapidViewId)
-          .then(function(view) {
-            view.getEpics()
-              .then(function(epics) {
-                var count = 0;
-                indicatorLabel.text('Done.  Loaded 0 / ' + epics.length + ' epics.');
-                Q.all(
-                  _(epics).map(function(epic) {
-                    return epic.getIssues(epicLinkFieldId)
-                      .then(function(issues) {
-                        indicatorLabel.text('Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.');              
-                      });
-                  }).value()
-                ).then(function() {
-                  indicatorContainer.remove();
-                });
-              });
-          });
+    jiraClient.getRapidViewById(rapidViewId)
+      .then(function(view) {
+        view.getEpics()
+          .then(drawEpics);
       });
   }
   

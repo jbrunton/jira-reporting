@@ -101,4 +101,14 @@ JiraClient.prototype.getRapidViewById = function(rapidViewId) {
   });
 }
 
+JiraClient.prototype.getEpicLinkFieldId = function () {
+  if (!this._promiseForEpicLinkFieldId) {
+    this._promiseForEpicLinkFieldId = this.getResourceByName('field', 'Epic Link')
+      .then(function(field) {
+        return field.schema.customId;
+      });
+  }
+  return this._promiseForEpicLinkFieldId;
+}
+
 module.exports = JiraClient;
