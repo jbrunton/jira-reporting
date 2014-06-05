@@ -67,15 +67,21 @@ $(function() {
         })
         .value();
 
-      var wip = 0;
+      var workInProgress = 0;
+      var previousEvent;
       _(sortedEvents)
         .each(function(event) {
           if (event.key == 'started') {
-            ++wip;
+            ++workInProgress;
           } else if (event.key == 'completed') {
-            --wip;
+            --workInProgress;
           }
-          event.wip = wip;
+
+          event.workInProgress = workInProgress;
+
+          if (previousEvent) {
+            previousEvent.nextEvent = event;
+          }
         });
 
       return sortedEvents;
@@ -91,10 +97,22 @@ $(function() {
         .reduce(function(sum, event) {
           return sum + (event.key == 'completed' ? 1 : 0);
         }, 0);
+      var eventAtDate = getEventAtDate(startDate, events);
       return {
         rowDate: startDate,
-        throughput: throughput
+        throughput: throughput,
+        workInProgress: (eventAtDate || {}).workInProgress
       };
+    }
+
+    function getEventAtDate(date, events) {
+      var matchingEvent = _(events)
+        .find(function(event) {
+          var onOrBeforeDate = event.date.isBefore(date) || event.date.isSame(date);
+          var endsBeforeDate = event.nextEvent && event.nextEvent.isBefore(date);
+          return onOrBeforeDate && !endsBeforeDate;
+        });
+      return matchingEvent;
     }
 
     function drawReport(epics) {
