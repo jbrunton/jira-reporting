@@ -30,15 +30,67 @@ $(function() {
     }
   });
 
-  var tableTemplate = require("./templates/report.hbs");
-  var epicRowTemplate = require('./templates/epic_row.hbs');
-  var issueRowTemplate = require('./templates/issue_row.hbs');
-  var spinnerRowTemplate = require('./templates/spinner_row.hbs');
-
   function drawEpicThroughput(target) {
+    var tableTemplate = require("./templates/epic_throughput/table.hbs");
+    var rowTemplate = require("./templates/epic_throughput/row.hbs");
+
+    function getStartDate(epics) {
+      var earliestDate = _(epics)
+        .reduce(function(earliestDate, epic) {
+          if (!earliestDate || epic.startedDate.isBefore(earliestDate)) {
+            return epic.startedDate;
+          } else {
+            return earliestDate;
+          }
+        }, null);
+
+      if (earliestDate) {
+        return earliestDate.isoWeekday(1).startOf("day");
+      }
+    }
+
+    function drawReport(epics) {
+      var indicator = new Indicator(function(count, position) {
+        this.setText("Loaded " + position + " / " + count + " epics.");
+      });
+      indicator.display(target);
+
+      var table = $(tableTemplate()).hide().appendTo(target);
+
+      indicator.begin(epics.length);
+      Q.all(
+        _(epics)
+          .map(function(epic) {
+            return epic.analyze()
+          })
+          .value()
+      ).then(function() {
+          indicator.remove();
+          var now = moment(),
+            startDate = getStartDate(epics);
+          if (startDate) {
+            for (var rowDate = startDate.clone(); rowDate.isBefore(now); rowDate.add('weeks', 1)) {
+              $(rowTemplate({ rowDate: rowDate})).appendTo(table);
+            }
+            table.show();
+          }
+        });
+    }
+
+    var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+    jiraClient.getRapidViewById(rapidViewId)
+      .then(function(view) {
+        view.getEpics()
+          .then(drawReport);
+      });
   }
   
   function drawIssuesByEpic(target) {
+    var tableTemplate = require("./templates/issues_by_epic/table.hbs");
+    var epicRowTemplate = require('./templates/issues_by_epic/epic_row.hbs');
+    var issueRowTemplate = require('./templates/issues_by_epic/issue_row.hbs');
+    var spinnerRowTemplate = require('./templates/spinner_row.hbs');
+
     var indicator = new Indicator(function(count, position) {
       this.setText("Loaded " + position + " / " + count + " epics.");
     });
