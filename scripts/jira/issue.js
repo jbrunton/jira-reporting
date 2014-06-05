@@ -10,6 +10,8 @@ function Issue(jiraClient, issue) {
 
 Issue.prototype.analyze = function() {
 
+  // TODO: refactor this function and cache the promise
+
   function isStatusTransition(item) {
     return item.field == "status";
   }
@@ -43,21 +45,6 @@ Issue.prototype.analyze = function() {
       return null;
     }
   }
-
-//  var returnSelf = _.bind(function() {
-//    return this;
-//  }, this);
-
-//  var getIssuesForSelf = _.bind(function(epicLinkFieldId) {
-//    return this._jiraClient.search({
-//      query: "cf[" + epicLinkFieldId + "]=" + this.key,
-//      expand: ['changelog']
-//    });
-//  }, this);
-//
-//  var assignIssues = _.bind(function(issues) {
-//    this.issues = issues;
-//  }, this);
 
   this.startedDate = getIssueStartedDate(this);
   this.completedDate = getIssueCompletedDate(this);
