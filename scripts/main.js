@@ -256,13 +256,23 @@ $(function() {
     function drawEpic(epic) {
       var placeholderRow = $("<tr>").appendTo(table);
 
+      function drawIssue(issue) {
+        return issue.analyze().then(function() {
+          $(issueRowTemplate(issue)).insertAfter(placeholderRow);
+        });
+      }
+
       return epic.analyze()
         .then(function() {
-          _(epic.issues).reverse().each(function(issue) {
-            $(issueRowTemplate(issue)).insertAfter(placeholderRow);
+          Q.all(
+            _(epic.issues)
+              .reverse()
+              .map(drawIssue)
+              .value()
+          ).then(function() {
+            placeholderRow.replaceWith(epicRowTemplate(epic));
+            indicator.increment();
           });
-          placeholderRow.replaceWith(epicRowTemplate(epic));
-          indicator.increment();
         });
     }
 

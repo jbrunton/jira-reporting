@@ -1,4 +1,5 @@
 var _ = require('lodash');
+var Issue = require('./issue');
 
 function Epic(jiraClient, issue) {
   this._jiraClient = jiraClient;
@@ -19,8 +20,14 @@ Epic.prototype.analyze = function() {
     });
   }, this);
 
+  var createIssue = _.bind(function(issue) {
+    return new Issue(this._jiraClient, issue);
+  }, this);
+
   var assignIssues = _.bind(function(issues) {
-    this.issues = issues;
+    this.issues = _(issues)
+      .map(createIssue)
+      .value();
   }, this);
 
   return this._jiraClient
