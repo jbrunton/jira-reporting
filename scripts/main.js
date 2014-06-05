@@ -82,6 +82,7 @@ $(function() {
           if (previousEvent) {
             previousEvent.nextEvent = event;
           }
+          previousEvent = event;
         });
 
       return sortedEvents;
@@ -109,7 +110,7 @@ $(function() {
       var matchingEvent = _(events)
         .find(function(event) {
           var onOrBeforeDate = event.date.isBefore(date) || event.date.isSame(date);
-          var endsBeforeDate = event.nextEvent && event.nextEvent.isBefore(date);
+          var endsBeforeDate = event.nextEvent && event.nextEvent.date.isBefore(date);
           return onOrBeforeDate && !endsBeforeDate;
         });
       return matchingEvent;
