@@ -9,6 +9,8 @@ var ChartMenu = require('./ui/chart_menu');
 var EpicDataset = require('./epic_dataset');
 var Chart = require('./ui/chart');
 var Indicator = require('./ui/indicator');
+var DateRange = require('./date_range');
+var EpicDataset = require('./epic_dataset');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -49,85 +51,6 @@ $(function() {
       }
     }
 
-    function analyzeEvents(epics) {
-      var events = [];
-      _(epics)
-        .each(function(epic) {
-          if (epic.startedDate) {
-            events.push({ key: 'started', date: epic.startedDate});
-          }
-          if (epic.completedDate) {
-            events.push({ key: 'completed', date: epic.completedDate});
-          }
-        });
-
-      var sortedEvents =  _(events)
-        .sortBy(function(event) {
-          return event.date.valueOf();
-        })
-        .value();
-
-      var workInProgress = 0;
-      var previousEvent;
-      _(sortedEvents)
-        .each(function(event) {
-          if (event.key == 'started') {
-            ++workInProgress;
-          } else if (event.key == 'completed') {
-            --workInProgress;
-          }
-
-          event.workInProgress = workInProgress;
-
-          if (previousEvent) {
-            previousEvent.nextEvent = event;
-          }
-          previousEvent = event;
-        });
-
-      return sortedEvents;
-    }
-
-    function analyzeDateRange(startDate, endDate, events) {
-      var rangeEvents = _(events)
-        .filter(function(event) {
-          return (startDate.isBefore(event.date) || startDate.isSame(event.date)
-            && event.date.isBefore(endDate));
-        });
-      var throughput = rangeEvents
-        .reduce(function(sum, event) {
-          return sum + (event.key == 'completed' ? 1 : 0);
-        }, 0);
-      var completedRangeEvents = rangeEvents
-        .filter(function(event) {
-          return !_.isNull(event.completedDate);
-        });
-      if (completedRangeEvents.any()) {
-        var totalCycleTime = completedRangeEvents
-          .reduce(function (sum, event) {
-            return sum + event.startedDate.diff(event.completedDate, 'week', true);
-          }, 0);
-        var cycleTime = totalCycleTime / completedRangeEvents.size();
-      }
-      var eventAtDate = getEventAtDate(startDate, events);
-      return {
-        rowDate: startDate,
-        throughput: throughput,
-        workInProgress: (eventAtDate || {}).workInProgress || 0,
-        cycleTime: cycleTime
-      };
-    }
-
-    function getEventAtDate(date, events) {
-      var matchingEvent = _(events)
-        .find(function(event) {
-          var onOrBeforeDate = event.date.isBefore(date) || event.date.isSame(date);
-          var endsBeforeDate = event.nextEvent && event.nextEvent.date.isBefore(date);
-          return onOrBeforeDate && !endsBeforeDate;
-        });
-      return matchingEvent;
-    }
-
     function drawReport(epics) {
       var indicator = new Indicator(function(count, position) {
         this.setText("Loaded " + position + " / " + count + " epics.");
@@ -147,11 +70,24 @@ $(function() {
           indicator.remove();
           var now = moment(),
             startDate = getStartDate(epics);
-          var events = analyzeEvents(epics);
+          var dataset = new EpicDataset(epics);
+          
+          function drawRow(rowDate) {
+            var dateRange = new DateRange(rowDate, rowDate.clone().add('weeks', 1));
+            var cycleTime = dataset.getCycleTimeForRange(dateRange);
+            var throughput = dataset.getThroughputForRange(dateRange);
+            var rowData = {
+              rowDate: rowDate,
+              cycleTime: cycleTime,
+              throughput: throughput,
+              workInProgress: throughput * cycleTime
+            };
+            $(rowTemplate(rowData)).appendTo(table);
+          }
+          
           if (startDate) {
             for (var rowDate = startDate.clone(); rowDate.isBefore(now); rowDate.add('weeks', 1)) {
-              var rowData = analyzeDateRange(rowDate, rowDate.clone().add(7, 'days'), events);
-              $(rowTemplate(rowData)).appendTo(table);
+              drawRow(rowDate);
             }
             table.show();
           }

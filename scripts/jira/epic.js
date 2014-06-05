@@ -8,6 +8,12 @@ function Epic(jiraClient, issue) {
   _.bindAll(this);
 }
 
+Epic.prototype.getCycleTime = function(unit) {
+  if (this.startedDate && this.completedDate) {
+    return this.completedDate.diff(this.startedDate, unit, true);
+  }
+}
+
 Epic.prototype.analyze = function() {
 
   var returnSelf = _.bind(function() {
