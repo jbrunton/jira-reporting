@@ -98,11 +98,23 @@ $(function() {
         .reduce(function(sum, event) {
           return sum + (event.key == 'completed' ? 1 : 0);
         }, 0);
+      var completedRangeEvents = rangeEvents
+        .filter(function(event) {
+          return !_.isNull(event.completedDate);
+        });
+      if (completedRangeEvents.any()) {
+        var totalCycleTime = completedRangeEvents
+          .reduce(function (sum, event) {
+            return sum + event.startedDate.diff(event.completedDate, 'week', true);
+          }, 0);
+        var cycleTime = totalCycleTime / completedRangeEvents.size();
+      }
       var eventAtDate = getEventAtDate(startDate, events);
       return {
         rowDate: startDate,
         throughput: throughput,
-        workInProgress: (eventAtDate || {}).workInProgress || 0
+        workInProgress: (eventAtDate || {}).workInProgress || 0,
+        cycleTime: cycleTime
       };
     }
 
