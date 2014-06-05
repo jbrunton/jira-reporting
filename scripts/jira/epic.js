@@ -33,10 +33,11 @@ Epic.prototype.analyze = function() {
   }, this);
 
   var analyzeIssues = _.bind(function() {
-    _(this.issues).each(function(issue) {
-      issue.analyze();
-    });
-    return Q(this);
+    return Q.all(
+      _(this.issues).map(function(issue) {
+        return issue.analyze();
+      })
+    );
   }, this);
 
   function getEpicStartedDate(epic) {

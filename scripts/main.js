@@ -45,7 +45,7 @@ $(function() {
         }, null);
 
       if (earliestDate) {
-        return earliestDate.isoWeekday(1).startOf("day");
+        return earliestDate.clone().isoWeekday(1).startOf("day");
       }
     }
 
@@ -102,7 +102,7 @@ $(function() {
       return {
         rowDate: startDate,
         throughput: throughput,
-        workInProgress: (eventAtDate || {}).workInProgress
+        workInProgress: (eventAtDate || {}).workInProgress || 0
       };
     }
 
@@ -171,9 +171,7 @@ $(function() {
       var placeholderRow = $("<tr>").appendTo(table);
 
       function drawIssue(issue) {
-        return issue.analyze().then(function() {
-          $(issueRowTemplate(issue)).insertAfter(placeholderRow);
-        });
+        $(issueRowTemplate(issue)).insertAfter(placeholderRow);
       }
 
       return epic.analyze()
