@@ -59,8 +59,8 @@ Issue.prototype.analyze = function() {
 //    this.issues = issues;
 //  }, this);
 
-  //this.startedDate = getIssueStartedDate(this);
-  //this.completedDate = getIssueCompletedDate(this);
+  this.startedDate = getIssueStartedDate(this);
+  this.completedDate = getIssueCompletedDate(this);
 
   return Q(this);
 }
