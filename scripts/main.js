@@ -246,23 +246,35 @@ $(function() {
   }
   
   function drawIssuesByEpic(target) {
-    var indicator = new Indicator();
+    var indicator = new Indicator(function(count, position) {
+      this.setText("Loaded " + position + " / " + count + " epics.");
+    });
     indicator.display(target);
 
-    var table = $(tableTemplate()).appendTo(target);
+    var table = $(tableTemplate()).hide().appendTo(target);
+
+    function drawEpic(epic) {
+      var placeholderRow = $("<tr>").appendTo(table);
+
+      return epic.analyze()
+        .then(function() {
+          _(epic.issues).reverse().each(function(issue) {
+            $(issueRowTemplate(issue)).insertAfter(placeholderRow);
+          });
+          placeholderRow.replaceWith(epicRowTemplate(epic));
+          indicator.increment();
+        });
+    }
 
     function drawEpics(epics) {
-      var count = 0;
-      indicator.setText('Done.  Loaded 0 / ' + epics.length + ' epics.');
+      indicator.begin(epics.length);
       Q.all(
-        _(epics).map(function(epic) {
-          return epic.getIssues()
-            .then(function(issues) {
-              indicator.setText('Done.  Loaded ' + (++count) + ' / ' + epics.length + ' epics.');
-            });
-        }).value()
+        _(epics)
+          .map(drawEpic)
+          .value()
       ).then(function() {
         indicator.remove();
+        table.show();
       });
     }
 

@@ -1,7 +1,10 @@
 var $ = require('jquery');
 var Spinner = require('../vendor/spin');
 
-function Indicator() {
+function Indicator(onPositionChanged) {
+  this._count = 0;
+  this._position = 0;
+  this._onPositionChanged = onPositionChanged;
 }
 
 Indicator.prototype.display = function(target) {
@@ -22,6 +25,21 @@ Indicator.prototype.setText = function(text) {
 
 Indicator.prototype.remove = function() {
   this._container.remove();
+}
+
+Indicator.prototype.begin = function(count) {
+  this._count = count;
+  this._position = 0;
+  this._positionChanged();
+}
+
+Indicator.prototype.increment = function(amount) {
+  this._position = this._position += (amount || 1);
+  this._positionChanged();
+}
+
+Indicator.prototype._positionChanged = function() {
+  this._onPositionChanged(this._count, this._position);
 }
 
 module.exports = Indicator;

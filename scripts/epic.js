@@ -6,7 +6,7 @@ function Epic(jiraClient, issue) {
   _.bindAll(this);
 }
 
-Epic.prototype.getIssues = function() {
+Epic.prototype.analyze = function() {
 
   var returnSelf = _.bind(function() {
     return this;
@@ -19,9 +19,14 @@ Epic.prototype.getIssues = function() {
     });
   }, this);
 
+  var assignIssues = _.bind(function(issues) {
+    this.issues = issues;
+  }, this);
+
   return this._jiraClient
     .getEpicLinkFieldId()
     .then(getIssuesForSelf)
+    .then(assignIssues)
     .then(returnSelf);
 }
 
