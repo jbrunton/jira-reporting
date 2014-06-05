@@ -49,6 +49,54 @@ $(function() {
       }
     }
 
+    function analyzeEvents(epics) {
+      var events = [];
+      _(epics)
+        .each(function(epic) {
+          if (epic.startedDate) {
+            events.push({ key: 'started', date: epic.startedDate});
+          }
+          if (epic.completedDate) {
+            events.push({ key: 'completed', date: epic.completedDate});
+          }
+        });
+
+      var sortedEvents =  _(events)
+        .sortBy(function(event) {
+          return event.date.valueOf();
+        })
+        .value();
+
+      var wip = 0;
+      _(sortedEvents)
+        .each(function(event) {
+          if (event.key == 'started') {
+            ++wip;
+          } else if (event.key == 'completed') {
+            --wip;
+          }
+          event.wip = wip;
+        });
+
+      return sortedEvents;
+    }
+
+    function analyzeDateRange(startDate, endDate, events) {
+      var rangeEvents = _(events)
+        .filter(function(event) {
+          return (startDate.isBefore(event.date) || startDate.isSame(event.date)
+            && event.date.isBefore(endDate));
+        });
+      var throughput = rangeEvents
+        .reduce(function(sum, event) {
+          return sum + (event.key == 'completed' ? 1 : 0);
+        }, 0);
+      return {
+        rowDate: startDate,
+        throughput: throughput
+      };
+    }
+
     function drawReport(epics) {
       var indicator = new Indicator(function(count, position) {
         this.setText("Loaded " + position + " / " + count + " epics.");
@@ -68,9 +116,11 @@ $(function() {
           indicator.remove();
           var now = moment(),
             startDate = getStartDate(epics);
+          var events = analyzeEvents(epics);
           if (startDate) {
             for (var rowDate = startDate.clone(); rowDate.isBefore(now); rowDate.add('weeks', 1)) {
-              $(rowTemplate({ rowDate: rowDate})).appendTo(table);
+              var rowData = analyzeDateRange(rowDate, rowDate.clone().add(7, 'days'), events);
+              $(rowTemplate(rowData)).appendTo(table);
             }
             table.show();
           }
