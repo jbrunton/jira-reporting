@@ -1,14 +1,14 @@
-var JiraClient = require('./jira_client');
+var JiraClient = require('./jira/jira_client');
 var $ = require('jquery');
 var _ = require('lodash');
 var Q = require('q');
 var Handlebars = require("hbsfy/runtime");
 var moment = require('moment');
 var Spinner = require('../vendor/spin');
-var ChartMenu = require('./chart_menu');
+var ChartMenu = require('./ui/chart_menu');
 var EpicDataset = require('./epic_dataset');
-var Chart = require('./chart');
-var Indicator = require('./indicator');
+var Chart = require('./ui/chart');
+var Indicator = require('./ui/indicator');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);

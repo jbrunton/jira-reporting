@@ -1,5 +1,5 @@
 var $ = require('jquery');
-var Spinner = require('../vendor/spin');
+var Spinner = require('../../vendor/spin');
 
 function Indicator(onPositionChanged) {
   this._count = 0;
