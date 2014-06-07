@@ -166,135 +166,57 @@ $(function() {
   }
   
   function drawEpicCycleTime(target) {
-    //Width and height
-		var w = 1000;
-		var h = 300;
-		var padding = 30;
     
-    var timeChart = new TimeChart();
-    timeChart.addSeries({
-      key: 'cycle_time',
-      color: 'red',
-      axisOrientation: 'left',
-      data: [
-        { date: moment("May 1, 2014"), value: 10 },
-        { date: moment("May 8, 2014"), value: 35 },
-        { date: moment("May 15, 2014"), value: 30 }
-      ]
+    var indicator = new Indicator(function(count, position) {
+      this.setText("Loaded " + position + " / " + count + " epics.");
     });
-    timeChart.addSeries({
-      key: 'work_in_progress',
-      color: 'blue',
-      axisOrientation: 'right',
-      data: [
-        { date: moment("May 3, 2014"), value: 2 },
-        { date: moment("May 5, 2014"), value: 3 },
-        { date: moment("May 12, 2014"), value: 2 },
-        { date: moment("May 14, 2014"), value: 2.5 }
-      ]
-    });
+    indicator.display(target);
     
-    timeChart.draw(target);
-		
-		/*
-		//Dynamic, random dataset
-		var dataset = [];					//Initialize empty array
-		var numDataPoints = 50;				//Number of dummy data points to create
-		var xRange = Math.random() * 1000;	//Max range of new x values
-		var yRange = Math.random() * 1000;	//Max range of new y values
-		for (var i = 0; i < numDataPoints; i++) {					//Loop numDataPoints times
-			var newNumber1 = Math.round(Math.random() * xRange);	//New random integer
-			var newNumber2 = Math.round(Math.random() * yRange);	//New random integer
-			dataset.push([newNumber1, newNumber2]);					//Add new number to array
-		}
-		*/
-
-		//Create scale functions
-    // var xScale = d3.time.scale()
-    //           .domain([moment("Apr 1, 2014").toDate(), moment("Jul 1, 2014").toDate()])
-    //           .range([padding, w - padding * 2]);
-    // 
-    // var yScale = d3.scale.linear()
-    //           .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
-    //           .range([h - padding, padding]);
-    // 
-    // var rScale = d3.scale.linear()
-    //           .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
-    //           .range([2, 5]);
-    // 
-    // //Define X axis
-    // var xAxis = d3.svg.axis()
-    //          .scale(xScale)
-    //          .orient("bottom")
-    //          .ticks(5)
-    //          .tickFormat(function(d) {
-    //            return moment(d).format("DD MMM YYYY");
-    //          });
-    // 
-    // //Define Y axis
-    // var yAxis = d3.svg.axis()
-    //          .scale(yScale)
-    //          .orient("left")
-    //          .ticks(5);
-    // 
-    // 
-    // //Create SVG element
-    // var svg = d3.select(target)
-    //      .append("svg")
-    //      .attr("width", w)
-    //      .attr("height", h);
-    // 
-    // //Create circles
-    // svg.selectAll("circle")
-    //    .data(dataset)
-    //    .enter()
-    //    .append("circle")
-    //    .attr("cx", function(d) {
-    //        return xScale(d.date);
-    //    })
-    //    .attr("cy", function(d) {
-    //        return yScale(d.cycleTime);
-    //    })
-    //    .attr("r", function(d) {
-    //        return rScale(d.cycleTime);
-    //    });
-    // 
-    // 
-    // //Create labels
-    // svg.selectAll("text")
-    //    .data(dataset)
-    //    .enter()
-    //    .append("text")
-    //    .text(function(d) {
-    //        // return d[0] + "," + d[1];
-    //        return moment(d).format("DD MMM YYYY") + "," + d.cycleTime;
-    //    })
-    //    .attr("x", function(d) {
-    //        return xScale(d.date);
-    //    })
-    //    .attr("y", function(d) {
-    //        return yScale(d.cycleTime);
-    //    })
-    //    .attr("font-family", "sans-serif")
-    //    .attr("font-size", "11px")
-    //    .attr("fill", "red");
-    //      
-    // 
-    // //Create X axis
-    // svg.append("g")
-    //  .attr("class", "axis")
-    //  .attr("transform", "translate(0," + (h - padding) + ")")
-    //  .call(xAxis);
-    // 
-    // //Create Y axis
-    // svg.append("g")
-    //  .attr("class", "axis")
-    //  .attr("transform", "translate(" + padding + ",0)")
-    //  .call(yAxis);
-    // 
-    // // TODO: figure out why CSS isn't being loaded for the extension
-    // svg.selectAll('.axis path, .axis path')
-    //   .style({fill: 'none', stroke: 'black', 'shape-rendering': 'crispEdges'});
+    var loadEpics = function(view) {
+      return view.getEpics();
+    };
+    
+    var analyzeEpics = function(epics) {
+      indicator.begin(epics.length);
+      return Q.all(
+        _(epics)
+          .map(function(epic) {
+            return epic.analyze()
+              .then(function() {
+                indicator.increment();
+                return epic;
+              });
+          }).value()
+      );
+    };
+    
+    var drawChart = function(epics) {
+      indicator.remove();
+      
+      var epicDataset = new EpicDataset(epics);
+      
+      var cycleTimeData = epicDataset.getCycleTimeData();
+      
+      var timeChart = new TimeChart();
+      timeChart.addSeries({
+        key: 'cycle_time',
+        color: 'red',
+        axisOrientation: 'left',
+        data: cycleTimeData
+      });
+      timeChart.draw(target);      
+    };
+    
+    var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+    jiraClient.getRapidViewById(rapidViewId)
+      .then(loadEpics)
+      .then(analyzeEpics)
+      .then(drawChart);
+    
+    
+    
+  	
+	
   }
   
   var chartMenu = new ChartMenu();

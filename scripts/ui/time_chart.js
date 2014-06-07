@@ -92,9 +92,9 @@ TimeChart.prototype.draw = function(target) {
       .domain(yDomain)
       .range([h - padding, padding]);
 
-    var rScale = d3.scale.linear()
-      .domain(yDomain)
-      .range([2, 5]);
+    // var rScale = d3.scale.linear()
+    //   .domain(yDomain)
+    //   .range([2, 5]);
 
     var yAxis = d3.svg.axis()
       .scale(yScale)
@@ -118,9 +118,7 @@ TimeChart.prototype.draw = function(target) {
       .attr("cy", function(d) {
          return yScale(d.value);
       })
-      .attr("r", function(d) {
-         return rScale(d.value);
-      });
+      .attr("r", 4);
 	}, this);
 		
 	_(this._series)

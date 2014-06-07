@@ -4,6 +4,16 @@ function EpicDataset(epics) {
   this._epics = epics;
 }
 
+EpicDataset.prototype.getCycleTimeData = function() {
+  return _(this._epics)
+    .map(function(epic) {
+      return {
+        date: epic.getCompletedDate(),
+        value: epic.getCycleTime('day')
+      };
+    }).value();
+}
+
 EpicDataset.prototype.getEvents = function(filterKey) {
   function concatEvents(events, epic) {
     function eventsFor(key) {
