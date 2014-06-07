@@ -170,28 +170,28 @@ $(function() {
 		var w = 1000;
 		var h = 300;
 		var padding = 30;
-		
-		//Static dataset
-    // var dataset = [
-    //   [moment("May 1, 2014"), 20],
-    //   [moment("May 8, 2014"), 50],
-    //   [moment("May 15, 2014"), 30]
-    //        //[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
-    //        //[410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
-    //        //[600, 150]
-    //        ];
     
     var dataset = [
-      { date: moment("May 1, 2014"), cycleTime: 10 },
-      { date: moment("May 8, 2014"), cycleTime: 35 },
-      { date: moment("May 15, 2014"), cycleTime: 30 }
+      { date: moment("May 1, 2014"), cycleTime: 10, workInProgress: 3 },
+      { date: moment("May 8, 2014"), cycleTime: 35, workInProgress: 8 },
+      { date: moment("May 15, 2014"), cycleTime: 30, workInProgress: 2 }
     ];
     
     var timeChart = new TimeChart(dataset);
     timeChart.addSeries({
       key: 'cycle_time',
+      color: 'red',
+      axisOrientation: 'left',
       getY: function(d) {
         return d.cycleTime
+      }
+    });
+    timeChart.addSeries({
+      key: 'work_in_progress',
+      color: 'blue',
+      axisOrientation: 'right',
+      getY: function(d) {
+        return d.workInProgress
       }
     });
     

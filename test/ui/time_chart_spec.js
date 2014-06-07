@@ -2,13 +2,13 @@ var TimeChart = require('../../scripts/ui/time_chart');
 var moment = require('moment');
 
 describe ("TimeChart", function() {
-  var timeChart, series1;
+  var timeChart, series1, series2;
   
   beforeEach(function() {
     var data = [
-      { date: moment('1 May 2014'), value1: 2 },
-      { date: moment('8 May 2014'), value1: 4 },
-      { date: moment('15 May 2014'), value1: 6 }
+      { date: moment('1 May 2014'), value1: 2, value2: 3 },
+      { date: moment('8 May 2014'), value1: 4, value2: 6 },
+      { date: moment('15 May 2014'), value1: 6, value2: 9 }
     ];
     timeChart = new TimeChart(data);
 
@@ -16,6 +16,13 @@ describe ("TimeChart", function() {
       key: 'series1',
       getY: function(d) {
         return d.value1;
+      }
+    };
+
+    series2 = {
+      key: 'series2',
+      getY: function(d) {
+        return d.value2;
       }
     };
   });
@@ -35,9 +42,5 @@ describe ("TimeChart", function() {
         moment('15 May 2014').toDate()
       ]);
     });
-  });
-  
-  describe ("#draw", function() {
-    
   });
 });

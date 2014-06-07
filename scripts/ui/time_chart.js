@@ -36,10 +36,6 @@ TimeChart.prototype.getXDomain = function() {
   return this._xDomain;
 }
 
-TimeChart.prototype.drawSeries = function(series) {
-  
-}
-
 TimeChart.prototype.draw = function(target) {
   var w = 1000;
 	var h = 300;
@@ -81,7 +77,7 @@ TimeChart.prototype.draw = function(target) {
 
     var yAxis = d3.svg.axis()
       .scale(yScale)
-      .orient("left")
+      .orient(series.axisOrientation)
       .ticks(5);
       
     svg.append("g")
@@ -89,12 +85,14 @@ TimeChart.prototype.draw = function(target) {
       .attr("transform", "translate(" + padding + ",0)")
       .call(yAxis);
       
-    svg.selectAll("circle")
+    svg.selectAll("circle." + series.key)
       .data(this._data)
       .enter()
       .append("circle")
+      .classed(series.key, true)
+      .style("fill", series.color)
       .attr("cx", function(d) {
-         return xScale(d.date);
+         return xScale(d.date.toDate());
       })
       .attr("cy", function(d) {
          return yScale(series.getY(d));
@@ -106,54 +104,6 @@ TimeChart.prototype.draw = function(target) {
 		
 	_(this._series)
 	  .each(drawSeries);
-
-
-  		//Create circles
-      // svg.selectAll("circle")
-      //    .data(dataset)
-      //    .enter()
-      //    .append("circle")
-      //    .attr("cx", function(d) {
-      //        return xScale(d.date);
-      //    })
-      //    .attr("cy", function(d) {
-      //        return yScale(d.cycleTime);
-      //    })
-      //    .attr("r", function(d) {
-      //        return rScale(d.cycleTime);
-      //    });
-
-
-
-  
-
-		
-		//Create labels
-    // svg.selectAll("text")
-    //    .data(dataset)
-    //    .enter()
-    //    .append("text")
-    //    .text(function(d) {
-    //        // return d[0] + "," + d[1];
-    //        return moment(d).format("DD MMM YYYY") + "," + d.cycleTime;
-    //    })
-    //    .attr("x", function(d) {
-    //        return xScale(d.date);
-    //    })
-    //    .attr("y", function(d) {
-    //        return yScale(d.cycleTime);
-    //    })
-    //    .attr("font-family", "sans-serif")
-    //    .attr("font-size", "11px")
-    //    .attr("fill", "red");
-	  	
-		
-		
-		//Create Y axis
-    // svg.append("g")
-    //  .attr("class", "axis")
-    //  .attr("transform", "translate(" + padding + ",0)")
-    //  .call(yAxis);
 		
 		// TODO: figure out why CSS isn't being loaded for the extension
 		svg.selectAll('.axis path, .axis path')
