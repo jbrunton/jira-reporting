@@ -166,19 +166,27 @@ $(function() {
   
   function drawEpicCycleTime(target) {
     //Width and height
-		var w = 500;
+		var w = 1000;
 		var h = 300;
 		var padding = 30;
 		
-		/*
 		//Static dataset
-		var dataset = [
-						[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
-						[410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
-						[600, 150]
-					  ];
-		*/
+    // var dataset = [
+    //   [moment("May 1, 2014"), 20],
+    //   [moment("May 8, 2014"), 50],
+    //   [moment("May 15, 2014"), 30]
+    //        //[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+    //        //[410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
+    //        //[600, 150]
+    //        ];
+    
+    var dataset = [
+      { date: moment("May 1, 2014").toDate(), dateEpoch: moment("May 1, 2014").valueOf(), cycleTime: 10 },
+      { date: moment("May 8, 2014").toDate(), dateEpoch: moment("May 8, 2014").valueOf(), cycleTime: 35 },
+      { date: moment("May 15, 2014").toDate(), dateEpoch: moment("May 15, 2014").valueOf(), cycleTime: 30 }
+    ];
 		
+		/*
 		//Dynamic, random dataset
 		var dataset = [];					//Initialize empty array
 		var numDataPoints = 50;				//Number of dummy data points to create
@@ -189,31 +197,36 @@ $(function() {
 			var newNumber2 = Math.round(Math.random() * yRange);	//New random integer
 			dataset.push([newNumber1, newNumber2]);					//Add new number to array
 		}
+		*/
 
 		//Create scale functions
-		var xScale = d3.scale.linear()
-							 .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+		var xScale = d3.time.scale()
+							 .domain([moment("Apr 1, 2014").toDate(), moment("Jul 1, 2014").toDate()])
 							 .range([padding, w - padding * 2]);
 
 		var yScale = d3.scale.linear()
-							 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+							 .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
 							 .range([h - padding, padding]);
 
 		var rScale = d3.scale.linear()
-							 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+							 .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
 							 .range([2, 5]);
 
 		//Define X axis
 		var xAxis = d3.svg.axis()
 						  .scale(xScale)
 						  .orient("bottom")
-						  .ticks(5);
+						  .ticks(5)
+						  .tickFormat(function(d) {
+						    return moment(d).format("DD MMM YYYY");
+						  });
 
 		//Define Y axis
 		var yAxis = d3.svg.axis()
 						  .scale(yScale)
 						  .orient("left")
 						  .ticks(5);
+
 
 		//Create SVG element
 		var svg = d3.select(target)
@@ -227,13 +240,13 @@ $(function() {
 		   .enter()
 		   .append("circle")
 		   .attr("cx", function(d) {
-		   		return xScale(d[0]);
+		   		return xScale(d.date);
 		   })
 		   .attr("cy", function(d) {
-		   		return yScale(d[1]);
+		   		return yScale(d.cycleTime);
 		   })
 		   .attr("r", function(d) {
-		   		return rScale(d[1]);
+		   		return rScale(d.cycleTime);
 		   });
 
 		
@@ -243,13 +256,14 @@ $(function() {
 		   .enter()
 		   .append("text")
 		   .text(function(d) {
-		   		return d[0] + "," + d[1];
+		   		// return d[0] + "," + d[1];
+		   		return moment(d).format("DD MMM YYYY") + "," + d.cycleTime;
 		   })
 		   .attr("x", function(d) {
-		   		return xScale(d[0]);
+		   		return xScale(d.date);
 		   })
 		   .attr("y", function(d) {
-		   		return yScale(d[1]);
+		   		return yScale(d.cycleTime);
 		   })
 		   .attr("font-family", "sans-serif")
 		   .attr("font-size", "11px")
@@ -267,6 +281,10 @@ $(function() {
 			.attr("class", "axis")
 			.attr("transform", "translate(" + padding + ",0)")
 			.call(yAxis);
+		
+		// TODO: figure out why CSS isn't being loaded for the extension
+		svg.selectAll('.axis path, .axis path')
+		  .style({fill: 'none', stroke: 'black', 'shape-rendering': 'crispEdges'});
   }
   
   var chartMenu = new ChartMenu();
