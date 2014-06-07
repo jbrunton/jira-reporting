@@ -119,6 +119,22 @@ TimeChart.prototype.draw = function(target) {
          return yScale(d.value);
       })
       .attr("r", 4);
+      
+      var lineFunction = d3.svg.line()
+        .x(function(d) {
+          return xScale(d.date.toDate());
+        })
+        .y(function(d) {
+          return yScale(d.value);
+        })
+        .interpolate("basis");
+        
+      svg.append("path")
+        .attr("d", lineFunction(series.data))
+        .attr("stroke", series.color)
+        .attr("stroke-width", 2)
+        .attr("fill", "none");
+      
 	}, this);
 		
 	_(this._series)
