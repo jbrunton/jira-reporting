@@ -31,6 +31,9 @@ $(function() {
       return new Handlebars.SafeString(diffString);
     }
   });
+  Handlebars.registerHelper('round', function(value) {
+    return value.toFixed(2);
+  });
 
   function drawEpicThroughput(target) {
     var tableTemplate = require("./templates/epic_throughput/table.hbs");
