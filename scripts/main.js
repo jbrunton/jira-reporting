@@ -12,6 +12,7 @@ var Indicator = require('./ui/indicator');
 var DateRange = require('./date_range');
 var EpicDataset = require('./epic_dataset');
 var d3 = require('d3');
+var TimeChart = require('./ui/time_chart');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -181,10 +182,20 @@ $(function() {
     //        ];
     
     var dataset = [
-      { date: moment("May 1, 2014").toDate(), dateEpoch: moment("May 1, 2014").valueOf(), cycleTime: 10 },
-      { date: moment("May 8, 2014").toDate(), dateEpoch: moment("May 8, 2014").valueOf(), cycleTime: 35 },
-      { date: moment("May 15, 2014").toDate(), dateEpoch: moment("May 15, 2014").valueOf(), cycleTime: 30 }
+      { date: moment("May 1, 2014"), cycleTime: 10 },
+      { date: moment("May 8, 2014"), cycleTime: 35 },
+      { date: moment("May 15, 2014"), cycleTime: 30 }
     ];
+    
+    var timeChart = new TimeChart(dataset);
+    timeChart.addSeries({
+      key: 'cycle_time',
+      getY: function(d) {
+        return d.cycleTime
+      }
+    });
+    
+    timeChart.draw(target);
 		
 		/*
 		//Dynamic, random dataset
@@ -200,91 +211,91 @@ $(function() {
 		*/
 
 		//Create scale functions
-		var xScale = d3.time.scale()
-							 .domain([moment("Apr 1, 2014").toDate(), moment("Jul 1, 2014").toDate()])
-							 .range([padding, w - padding * 2]);
-
-		var yScale = d3.scale.linear()
-							 .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
-							 .range([h - padding, padding]);
-
-		var rScale = d3.scale.linear()
-							 .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
-							 .range([2, 5]);
-
-		//Define X axis
-		var xAxis = d3.svg.axis()
-						  .scale(xScale)
-						  .orient("bottom")
-						  .ticks(5)
-						  .tickFormat(function(d) {
-						    return moment(d).format("DD MMM YYYY");
-						  });
-
-		//Define Y axis
-		var yAxis = d3.svg.axis()
-						  .scale(yScale)
-						  .orient("left")
-						  .ticks(5);
-
-
-		//Create SVG element
-		var svg = d3.select(target)
-					.append("svg")
-					.attr("width", w)
-					.attr("height", h);
-
-		//Create circles
-		svg.selectAll("circle")
-		   .data(dataset)
-		   .enter()
-		   .append("circle")
-		   .attr("cx", function(d) {
-		   		return xScale(d.date);
-		   })
-		   .attr("cy", function(d) {
-		   		return yScale(d.cycleTime);
-		   })
-		   .attr("r", function(d) {
-		   		return rScale(d.cycleTime);
-		   });
-
-		
-		//Create labels
-		svg.selectAll("text")
-		   .data(dataset)
-		   .enter()
-		   .append("text")
-		   .text(function(d) {
-		   		// return d[0] + "," + d[1];
-		   		return moment(d).format("DD MMM YYYY") + "," + d.cycleTime;
-		   })
-		   .attr("x", function(d) {
-		   		return xScale(d.date);
-		   })
-		   .attr("y", function(d) {
-		   		return yScale(d.cycleTime);
-		   })
-		   .attr("font-family", "sans-serif")
-		   .attr("font-size", "11px")
-		   .attr("fill", "red");
-	  	
-		
-		//Create X axis
-		svg.append("g")
-			.attr("class", "axis")
-			.attr("transform", "translate(0," + (h - padding) + ")")
-			.call(xAxis);
-		
-		//Create Y axis
-		svg.append("g")
-			.attr("class", "axis")
-			.attr("transform", "translate(" + padding + ",0)")
-			.call(yAxis);
-		
-		// TODO: figure out why CSS isn't being loaded for the extension
-		svg.selectAll('.axis path, .axis path')
-		  .style({fill: 'none', stroke: 'black', 'shape-rendering': 'crispEdges'});
+    // var xScale = d3.time.scale()
+    //           .domain([moment("Apr 1, 2014").toDate(), moment("Jul 1, 2014").toDate()])
+    //           .range([padding, w - padding * 2]);
+    // 
+    // var yScale = d3.scale.linear()
+    //           .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
+    //           .range([h - padding, padding]);
+    // 
+    // var rScale = d3.scale.linear()
+    //           .domain([0, d3.max(dataset, function(d) { return d.cycleTime; })])
+    //           .range([2, 5]);
+    // 
+    // //Define X axis
+    // var xAxis = d3.svg.axis()
+    //          .scale(xScale)
+    //          .orient("bottom")
+    //          .ticks(5)
+    //          .tickFormat(function(d) {
+    //            return moment(d).format("DD MMM YYYY");
+    //          });
+    // 
+    // //Define Y axis
+    // var yAxis = d3.svg.axis()
+    //          .scale(yScale)
+    //          .orient("left")
+    //          .ticks(5);
+    // 
+    // 
+    // //Create SVG element
+    // var svg = d3.select(target)
+    //      .append("svg")
+    //      .attr("width", w)
+    //      .attr("height", h);
+    // 
+    // //Create circles
+    // svg.selectAll("circle")
+    //    .data(dataset)
+    //    .enter()
+    //    .append("circle")
+    //    .attr("cx", function(d) {
+    //        return xScale(d.date);
+    //    })
+    //    .attr("cy", function(d) {
+    //        return yScale(d.cycleTime);
+    //    })
+    //    .attr("r", function(d) {
+    //        return rScale(d.cycleTime);
+    //    });
+    // 
+    // 
+    // //Create labels
+    // svg.selectAll("text")
+    //    .data(dataset)
+    //    .enter()
+    //    .append("text")
+    //    .text(function(d) {
+    //        // return d[0] + "," + d[1];
+    //        return moment(d).format("DD MMM YYYY") + "," + d.cycleTime;
+    //    })
+    //    .attr("x", function(d) {
+    //        return xScale(d.date);
+    //    })
+    //    .attr("y", function(d) {
+    //        return yScale(d.cycleTime);
+    //    })
+    //    .attr("font-family", "sans-serif")
+    //    .attr("font-size", "11px")
+    //    .attr("fill", "red");
+    //      
+    // 
+    // //Create X axis
+    // svg.append("g")
+    //  .attr("class", "axis")
+    //  .attr("transform", "translate(0," + (h - padding) + ")")
+    //  .call(xAxis);
+    // 
+    // //Create Y axis
+    // svg.append("g")
+    //  .attr("class", "axis")
+    //  .attr("transform", "translate(" + padding + ",0)")
+    //  .call(yAxis);
+    // 
+    // // TODO: figure out why CSS isn't being loaded for the extension
+    // svg.selectAll('.axis path, .axis path')
+    //   .style({fill: 'none', stroke: 'black', 'shape-rendering': 'crispEdges'});
   }
   
   var chartMenu = new ChartMenu();
