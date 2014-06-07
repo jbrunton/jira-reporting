@@ -171,28 +171,27 @@ $(function() {
 		var h = 300;
 		var padding = 30;
     
-    var dataset = [
-      { date: moment("May 1, 2014"), cycleTime: 10, workInProgress: 3 },
-      { date: moment("May 8, 2014"), cycleTime: 35, workInProgress: 8 },
-      { date: moment("May 15, 2014"), cycleTime: 30, workInProgress: 2 }
-    ];
-    
-    var timeChart = new TimeChart(dataset);
+    var timeChart = new TimeChart();
     timeChart.addSeries({
       key: 'cycle_time',
       color: 'red',
       axisOrientation: 'left',
-      getY: function(d) {
-        return d.cycleTime
-      }
+      data: [
+        { date: moment("May 1, 2014"), value: 10 },
+        { date: moment("May 8, 2014"), value: 35 },
+        { date: moment("May 15, 2014"), value: 30 }
+      ]
     });
     timeChart.addSeries({
       key: 'work_in_progress',
       color: 'blue',
       axisOrientation: 'right',
-      getY: function(d) {
-        return d.workInProgress
-      }
+      data: [
+        { date: moment("May 3, 2014"), value: 2 },
+        { date: moment("May 5, 2014"), value: 3 },
+        { date: moment("May 12, 2014"), value: 2 },
+        { date: moment("May 14, 2014"), value: 2.5 }
+      ]
     });
     
     timeChart.draw(target);

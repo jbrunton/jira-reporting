@@ -2,8 +2,7 @@ var _ = require('lodash');
 var d3 = require('d3');
 var moment = require('moment');
 
-function TimeChart(data) {
-  this._data = data;
+function TimeChart() {
   this._series = [];
   _.bindAll(this);
 }
@@ -20,17 +19,39 @@ TimeChart.prototype.getSeries = function(key) {
 
 TimeChart.prototype.getXDomain = function() {
   if (!this._xDomain) {
-    var dates = _(this._data)
-      .pluck('date');
-    var startDate = dates
-      .min(function(moment) {
-        return moment.valueOf();
-      }).value().toDate();
-    var endDate = dates
-      .max(function(moment) {
-        return moment.valueOf();
-      }).value().toDate();
-    this._xDomain = [startDate, endDate];
+    function momentEpoch(moment) {
+      return moment.valueOf();
+    }
+
+    var seriesDomains = _(this._series)
+      .map(function(series) {
+        var seriesDates = _(series.data)
+          .pluck('date');
+
+        return {
+          startDate: _(seriesDates)
+            .min(momentEpoch)
+            .value(),
+          endDate: _(seriesDates)
+            .max(momentEpoch)
+            .value()
+        };
+      });
+
+    var startDate = seriesDomains
+      .pluck('startDate')
+      .min(momentEpoch)
+      .value();
+
+    var endDate = seriesDomains
+      .pluck('endDate')
+      .max(momentEpoch)
+      .value();
+
+    this._xDomain = [
+      startDate.clone().add('days', -1),
+      endDate.clone().add('days', 1)
+    ];
   }
 
   return this._xDomain;
@@ -65,7 +86,7 @@ TimeChart.prototype.draw = function(target) {
 		.call(xAxis);
 		
 	var drawSeries = _.bind(function(series) {
-	  var yDomain = [0, d3.max(this._data, function(d) { return series.getY(d); })];
+	  var yDomain = [0, d3.max(series.data, function(d) { return d.value; })];
 
     var yScale = d3.scale.linear()
       .domain(yDomain)
@@ -86,7 +107,7 @@ TimeChart.prototype.draw = function(target) {
       .call(yAxis);
       
     svg.selectAll("circle." + series.key)
-      .data(this._data)
+      .data(series.data)
       .enter()
       .append("circle")
       .classed(series.key, true)
@@ -95,10 +116,10 @@ TimeChart.prototype.draw = function(target) {
          return xScale(d.date.toDate());
       })
       .attr("cy", function(d) {
-         return yScale(series.getY(d));
+         return yScale(d.value);
       })
       .attr("r", function(d) {
-         return rScale(series.getY(d));
+         return rScale(d.value);
       });
 	}, this);
 		
