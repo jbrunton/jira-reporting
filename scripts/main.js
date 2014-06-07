@@ -56,6 +56,7 @@ $(function() {
         this.setText("Loaded " + position + " / " + count + " epics.");
       });
       indicator.display(target);
+      indicator.begin(epics.length);
 
       var table = $(tableTemplate()).hide().appendTo(target);
 
@@ -63,7 +64,10 @@ $(function() {
       Q.all(
         _(epics)
           .map(function(epic) {
-            return epic.analyze()
+            return epic.analyze().then(function(epic) {
+              indicator.increment();
+              return epic;
+            });
           })
           .value()
       ).then(function() {
