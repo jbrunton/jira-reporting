@@ -103,7 +103,7 @@ TimeChart.prototype.draw = function(target) {
       
     svg.append("g")
       .attr("class", "axis")
-      .attr("transform", "translate(" + padding + ",0)")
+      .attr("transform", "translate(" + (series.axisOrientation == "left" ? padding : (w - padding * 2)) + ",0)")
       .call(yAxis);
       
     svg.selectAll("circle." + series.key)
