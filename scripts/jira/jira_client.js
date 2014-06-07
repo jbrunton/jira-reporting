@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var Q = require('q');
 var _ = require('lodash');
+var RapidView = require('./rapid_view');
 
 function JiraClient(domain) {
   if (!domain) {
@@ -8,6 +9,8 @@ function JiraClient(domain) {
   }
   
   this._domain = domain;
+
+  _.bindAll(this);
 }
 
 JiraClient.prototype.getDomain = function() {
@@ -71,6 +74,7 @@ JiraClient.prototype.search = function(opts) {
 }
 
 JiraClient.prototype.getRapidViews = function() {
+  var self = this;
   var deferred = Q.defer();
   $.ajax({
 		type: 'GET',
@@ -80,10 +84,31 @@ JiraClient.prototype.getRapidViews = function() {
 			deferred.reject();
 		},
 		success: function(results) {
-			deferred.resolve(results.views);
+			deferred.resolve(
+			  _(results.views).map(function(view) {
+			    return new RapidView(self, view);
+			  }));
 		}
 	});
 	return deferred.promise;
+}
+
+JiraClient.prototype.getRapidViewById = function(rapidViewId) {
+  return this.getRapidViews().then(function(views) {
+    return _(views).find(function(view) {
+      return view.id == rapidViewId;
+    });
+  });
+}
+
+JiraClient.prototype.getEpicLinkFieldId = function () {
+  if (!this._promiseForEpicLinkFieldId) {
+    this._promiseForEpicLinkFieldId = this.getResourceByName('field', 'Epic Link')
+      .then(function(field) {
+        return field.schema.customId;
+      });
+  }
+  return this._promiseForEpicLinkFieldId;
 }
 
 module.exports = JiraClient;
