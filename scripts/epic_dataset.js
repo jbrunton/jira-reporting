@@ -14,6 +14,33 @@ EpicDataset.prototype.getCycleTimeData = function() {
     }).value();
 }
 
+EpicDataset.prototype.getWorkInProgressData = function() {
+  var events = this.getEvents(),
+    firstDate = _(events).first().date,
+    lastDate = _(events).last().date;
+    
+  var data = [];
+  var eventIndex = 0,
+    wip = 0;
+  for (var date = firstDate.clone(); date.isBefore(lastDate); date.add('days', 1)) {
+    for (var event = events[eventIndex];
+      eventIndex < events.length && event.date.isBefore(date);
+      event = events[++eventIndex])
+    {
+       if (event.key == 'started') {
+         wip += 1;
+       } else {
+         wip -= 1;
+       }
+    }
+    data.push({
+      date: date.clone(),
+      value: wip
+    });
+  }
+  return data;
+}
+
 EpicDataset.prototype.getEvents = function(filterKey) {
   function concatEvents(events, epic) {
     function eventsFor(key) {

@@ -196,6 +196,7 @@ $(function() {
       var epicDataset = new EpicDataset(epics);
       
       var cycleTimeData = epicDataset.getCycleTimeData();
+      var wipData = epicDataset.getWorkInProgressData();
       
       var timeChart = new TimeChart();
       timeChart.addSeries({
@@ -203,6 +204,12 @@ $(function() {
         color: 'red',
         axisOrientation: 'left',
         data: cycleTimeData
+      });
+      timeChart.addSeries({
+        key: 'wip',
+        color: 'blue',
+        axisOrientation: 'right',
+        data: wipData
       });
       timeChart.draw(target);      
     };
