@@ -28,7 +28,7 @@ Epic.prototype.analyze = function() {
   }, this);
 
   var createIssue = _.bind(function(issue) {
-    return new Issue(this._jiraClient, issue);
+    return new Issue(issue);
   }, this);
 
   var assignIssues = _.bind(function(issues) {
