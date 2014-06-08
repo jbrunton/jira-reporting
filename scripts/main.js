@@ -202,6 +202,7 @@ $(function() {
       timeChart.addSeries({
         key: 'cycle_time',
         color: 'red',
+        circle: true,
         axisOrientation: 'left',
         data: cycleTimeData
       });

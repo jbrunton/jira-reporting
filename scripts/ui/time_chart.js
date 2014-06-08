@@ -86,15 +86,11 @@ TimeChart.prototype.draw = function(target) {
 		.call(xAxis);
 		
 	var drawSeries = _.bind(function(series) {
-	  var yDomain = [0, d3.max(series.data, function(d) { return d.value; })];
+    var yDomain = [0, d3.max(series.data, function(d) { return d.value; })];
 
     var yScale = d3.scale.linear()
       .domain(yDomain)
       .range([h - padding, padding]);
-
-    // var rScale = d3.scale.linear()
-    //   .domain(yDomain)
-    //   .range([2, 5]);
 
     var yAxis = d3.svg.axis()
       .scale(yScale)
@@ -105,37 +101,39 @@ TimeChart.prototype.draw = function(target) {
       .attr("class", "axis")
       .attr("transform", "translate(" + (series.axisOrientation == "left" ? padding : (w - padding * 2)) + ",0)")
       .call(yAxis);
-      
-    svg.selectAll("circle." + series.key)
-      .data(series.data)
-      .enter()
-      .append("circle")
-      .classed(series.key, true)
-      .style("fill", series.color)
-      .attr("cx", function(d) {
-         return xScale(d.date.toDate());
-      })
-      .attr("cy", function(d) {
-         return yScale(d.value);
-      })
-      .attr("r", 4);
-      
-      var lineFunction = d3.svg.line()
-        .x(function(d) {
-          return xScale(d.date.toDate());
+
+    if (series.circle) {
+      svg.selectAll("circle." + series.key)
+        .data(series.data)
+        .enter()
+        .append("circle")
+        .classed(series.key, true)
+        .style("fill", series.color)
+        .attr("cx", function(d) {
+           return xScale(d.date.toDate());
         })
-        .y(function(d) {
-          return yScale(d.value);
+        .attr("cy", function(d) {
+           return yScale(d.value);
         })
-        .interpolate("basis");
-        
-      svg.append("path")
-        .attr("d", lineFunction(series.data))
-        .attr("stroke", series.color)
-        .attr("stroke-width", 2)
-        .attr("fill", "none");
+        .attr("r", 4);
+    }
       
-	}, this);
+    var lineFunction = d3.svg.line()
+      .x(function(d) {
+        return xScale(d.date.toDate());
+      })
+      .y(function(d) {
+        return yScale(d.value);
+      })
+      .interpolate("basis");
+      
+    svg.append("path")
+      .attr("d", lineFunction(series.data))
+      .attr("stroke", series.color)
+      .attr("stroke-width", 2)
+      .attr("fill", "none");
+      
+  }, this);
 		
 	_(this._series)
 	  .each(drawSeries);
