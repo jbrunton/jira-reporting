@@ -11,11 +11,23 @@ function isStatusTransition(item) {
   return item.field == "status";  
 }
 
+function isStartedTransition(item) {
+  // TODO: allow this to be configured
+  return isStatusTransition(item)
+    && (item.toString == "In Progress" || item.toString == "Started");
+}
+
+function isCompletedTransition(item) {
+  // TODO: allow this to be configured
+  return isStatusTransition(item)
+    && (item.toString == "Done" || item.toString == "Closed");  
+}
+
 Issue.prototype.getStartedDate = function() {
   var startedTransitions = _(this.changelog.histories)
     .filter(function(entry) {
       return _(entry.items).any(function(item) {
-        return isStatusTransition(item) && item.toString == "In Progress";
+        return isStatusTransition(item);
       });
     });
 
@@ -34,7 +46,7 @@ Issue.prototype.getCompletedDate = function() {
     }).last();
 
   if (lastTransition && _(lastTransition.items)
-    .find(isStatusTransition).toString == "Done") {
+    .any(isCompletedTransition)) {
     return moment(lastTransition.created);
   } else {
     return null;

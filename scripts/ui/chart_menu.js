@@ -38,8 +38,25 @@ ChartMenu.prototype.layout = function() {
 ChartMenu.prototype.configureCharts = function(charts) {
   this._charts = charts;
   
-  $("#ghx-chart-nav").on('DOMNodeInserted', this.layout);
-  $('#ghx-view-modes .aui-button').click(this.layout);
+  var configureChartNav = _.bind(function() {
+    $("#ghx-chart-nav").on('DOMNodeInserted', this.layout);
+    $('#ghx-view-modes .aui-button').click(this.layout);    
+  }, this);
+  
+  var listenForChartNav = function() {
+    var chartNav = $('#ghx-chart-nav');
+    if (chartNav.size()) {
+      $("body").off('DOMNodeInserted', listenForChartNav);
+      configureChartNav();
+    }
+  };
+  
+  var chartNav = $('#ghx-chart-nav');
+  if (chartNav.size()) {  
+    configureChartNav();
+  } else {
+    $("body").on('DOMNodeInserted', listenForChartNav);
+  }
   
   this.layout();
 }

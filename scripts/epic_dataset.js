@@ -11,7 +11,15 @@ EpicDataset.prototype.getCycleTimeData = function() {
         date: epic.getCompletedDate(),
         value: epic.getCycleTime('day')
       };
-    }).value();
+    })
+    .filter(function(d) {
+      // TODO: why were some dates null?  we shouldn't need to filter here.
+      return d.date != null;
+    })
+    .sortBy(function(d) {
+      return d.date.valueOf();
+    })
+    .value();
 }
 
 EpicDataset.prototype.getWorkInProgressData = function() {
@@ -33,10 +41,13 @@ EpicDataset.prototype.getWorkInProgressData = function() {
          wip -= 1;
        }
     }
-    data.push({
-      date: date.clone(),
-      value: wip
-    });
+    if (date) {
+      // TODO: are some dates null?  we shouldn't need to filter here.
+      data.push({
+        date: date.clone(),
+        value: wip
+      });
+    }
   }
   return data;
 }
