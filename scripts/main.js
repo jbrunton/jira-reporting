@@ -11,6 +11,8 @@ var Chart = require('./ui/chart');
 var Indicator = require('./ui/indicator');
 var DateRange = require('./date_range');
 var EpicDataset = require('./epic_dataset');
+var d3 = require('d3');
+var TimeChart = require('./ui/time_chart');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -163,6 +165,68 @@ $(function() {
       });
   }
   
+  function drawEpicCycleTime(target) {
+    
+    var indicator = new Indicator(function(count, position) {
+      this.setText("Loaded " + position + " / " + count + " epics.");
+    });
+    indicator.display(target);
+    
+    var loadEpics = function(view) {
+      return view.getEpics();
+    };
+    
+    var analyzeEpics = function(epics) {
+      indicator.begin(epics.length);
+      return Q.all(
+        _(epics)
+          .map(function(epic) {
+            return epic.analyze()
+              .then(function() {
+                indicator.increment();
+                return epic;
+              });
+          }).value()
+      );
+    };
+    
+    var drawChart = function(epics) {
+      indicator.remove();
+      
+      var epicDataset = new EpicDataset(epics);
+      
+      var cycleTimeData = epicDataset.getCycleTimeData();
+      var wipData = epicDataset.getWorkInProgressData();
+      
+      var timeChart = new TimeChart();
+      timeChart.addSeries({
+        key: 'cycle_time',
+        color: 'red',
+        circle: true,
+        axisOrientation: 'left',
+        data: cycleTimeData
+      });
+      timeChart.addSeries({
+        key: 'wip',
+        color: 'blue',
+        axisOrientation: 'right',
+        data: wipData
+      });
+      timeChart.draw(target);      
+    };
+    
+    var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+    jiraClient.getRapidViewById(rapidViewId)
+      .then(loadEpics)
+      .then(analyzeEpics)
+      .then(drawChart);
+    
+    
+    
+  	
+	
+  }
+  
   var chartMenu = new ChartMenu();
   chartMenu.configureCharts([
     new Chart({
@@ -170,10 +234,15 @@ $(function() {
       title: 'Issues By Epic',
       onDraw: drawIssuesByEpic
     }),
+    // new Chart({
+    //   menuItemId: 'epic-throughput',
+    //   title: 'Epic Throughput',
+    //   onDraw: drawEpicThroughput
+    // }),
     new Chart({
-      menuItemId: 'epic-throughput',
-      title: 'Epic Throughput',
-      onDraw: drawEpicThroughput
+      menuItemId: 'epic-cycle-time',
+      title: 'Epic Cycle Time',
+      onDraw: drawEpicCycleTime
     })
   ]);
   

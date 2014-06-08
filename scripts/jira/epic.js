@@ -14,6 +14,27 @@ Epic.prototype.getCycleTime = function(unit) {
   }
 }
 
+Epic.prototype.getCompletedDate = function() {
+  var issueCompletedDates = _(this.issues)
+    .map(function(issue) {
+      return issue.completedDate;
+    });
+
+  if (issueCompletedDates.any()
+    && issueCompletedDates.all())
+  {
+    var completedDate = issueCompletedDates
+      .max(function(date) {
+        return date.unix();
+      })
+      .value();
+
+    return completedDate;
+  } else {
+    return null;
+  }
+}
+
 Epic.prototype.analyze = function() {
 
   var returnSelf = _.bind(function() {
@@ -66,30 +87,9 @@ Epic.prototype.analyze = function() {
     }
   }
 
-  function getEpicCompletedDate(epic) {
-    var issueCompletedDates = _(epic.issues)
-      .map(function(issue) {
-        return issue.completedDate;
-      });
-
-    if (issueCompletedDates.any()
-      && issueCompletedDates.all())
-    {
-      var completedDate = issueCompletedDates
-        .max(function(date) {
-          return date.unix();
-        })
-        .value();
-
-      return completedDate;
-    } else {
-      return null;
-    }
-  }
-
   var assignDates = _.bind(function(issues) {
     this.startedDate = getEpicStartedDate(this);
-    this.completedDate = getEpicCompletedDate(this);
+    this.completedDate = this.getCompletedDate();
     return Q(this);
   }, this);
 
