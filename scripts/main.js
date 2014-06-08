@@ -220,16 +220,27 @@ $(function() {
       });
       timeChart.draw(target);
       
-      var simulator = new Simulator(new Randomizer());
+      var backlogSizeInput = $("<input>");
+      var backlogSizeSection = $("<p>Backlog size:</p>").append(backlogSizeInput).appendTo(target);      
+      var forecastSection = $("<div>").appendTo(target);
       
-      var forecastResult = simulator.forecast({
-        backlogSize: 5,
-        cycleTimeData: cycleTimeData,
-        workInProgressData: workInProgressData
+      backlogSizeInput.blur(function() {      
+        
+        var backlogSize = Number(backlogSizeInput.val());
+        if (backlogSize != NaN) {
+          var simulator = new Simulator(new Randomizer());
+          var forecastResult = simulator.forecast({
+            backlogSize: backlogSize,
+            cycleTimeData: cycleTimeData,
+            workInProgressData: workInProgressData
+          });
+      
+          var forecastTemplate = require('./templates/epic_cycle_time/forecast.hbs');
+          forecastSection.html(forecastTemplate(forecastResult));
+        } else {
+          forecastSection.empty();
+        }
       });
-      
-      var forecastTemplate = require('./templates/epic_cycle_time/forecast.hbs');
-      $(forecastTemplate(forecastResult)).appendTo(target);
     };
     
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];

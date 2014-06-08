@@ -20,6 +20,7 @@ Simulator.prototype._pickCycleTimeValues = function(opts) {
 }
 
 Simulator.prototype._pickWorkInProgressValues = function(opts) {
+  // TODO: this sample size should be increased
   return this._pickValues(opts.workInProgressData, 5);
 }
 
@@ -50,7 +51,8 @@ Simulator.prototype.play = function(opts) {
 }
 
 Simulator.prototype.forecast = function(opts) {
-  var results = this.play(_.assign({ playCount: 100 }, opts));
+  var playCount = 500;
+  var results = this.play(_.assign({ playCount: playCount }, opts));
   var sortedResults = _(results)
     .sortBy(function(result) {
       return result.actualTime;
@@ -58,9 +60,9 @@ Simulator.prototype.forecast = function(opts) {
     .value();
 
   var forecasts = [
-    { likelihood: 50, actualTime: sortedResults[49].actualTime },
-    { likelihood: 80, actualTime: sortedResults[79].actualTime },
-    { likelihood: 90, actualTime: sortedResults[89].actualTime }
+    { likelihood: 50, actualTime: sortedResults[playCount * 0.5 - 1].actualTime },
+    { likelihood: 80, actualTime: sortedResults[playCount * 0.8 - 1].actualTime },
+    { likelihood: 90, actualTime: sortedResults[playCount * 0.9 - 1].actualTime }
   ];
   
   return {
