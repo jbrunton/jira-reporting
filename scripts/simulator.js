@@ -49,4 +49,21 @@ Simulator.prototype.play = function(opts) {
     .value();
 }
 
+Simulator.prototype.forecast = function(opts) {
+  var results = this.play(_.assign({ playCount: 100 }, opts));
+  var sortedResults = _(results)
+    .sortBy(function(result) {
+      return result.actualTime;
+    })
+    .value();
+
+  var forecasts = [
+    { likelihood: 50, actualTime: sortedResults[49].actualTime },
+    { likelihood: 80, actualTime: sortedResults[79].actualTime },
+    { likelihood: 90, actualTime: sortedResults[89].actualTime }
+  ];
+  
+  return forecasts;
+}
+
 module.exports = Simulator;

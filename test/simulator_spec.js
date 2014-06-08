@@ -20,6 +20,9 @@ describe ('Simulator', function() {
   function stubSimulatorToPlay(results) {
     var index = 0;
     spyOn(simulator, "_playOnce").and.callFake(function() {
+      if (index == results.length) {
+        index = 0;
+      }
       return results[index++];
     });
   }
@@ -106,6 +109,31 @@ describe ('Simulator', function() {
       });
 
       expect(simulations).toEqual(expectedResults);
+    });
+  });
+  
+  describe ('#forecast', function() {
+    it ('plays 100 times and forecasts using the results', function() {
+      stubSimulatorToPlay([
+        { actualTime: 2 },
+        { actualTime: 2 },
+        { actualTime: 2 },
+        { actualTime: 2 },
+        { actualTime: 2 },
+        { actualTime: 5 },
+        { actualTime: 5 },
+        { actualTime: 5 },
+        { actualTime: 7 },
+        { actualTime: 9 }
+      ]);
+      var forecast = simulator.forecast({
+        backlogSize: 4
+      });
+      expect(forecast).toEqual([
+        { likelihood: 50, actualTime: 2 },
+        { likelihood: 80, actualTime: 5 },
+        { likelihood: 90, actualTime: 7 }
+      ]);      
     });
   });
 });
