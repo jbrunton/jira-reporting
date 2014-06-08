@@ -126,14 +126,17 @@ describe ('Simulator', function() {
         { actualTime: 7 },
         { actualTime: 9 }
       ]);
-      var forecast = simulator.forecast({
+      var result = simulator.forecast({
         backlogSize: 4
       });
-      expect(forecast).toEqual([
-        { likelihood: 50, actualTime: 2 },
-        { likelihood: 80, actualTime: 5 },
-        { likelihood: 90, actualTime: 7 }
-      ]);      
+      expect(result).toEqual({
+        backlogSize: 4,
+        forecasts: [
+          { likelihood: 50, actualTime: 2 },
+          { likelihood: 80, actualTime: 5 },
+          { likelihood: 90, actualTime: 7 }
+        ]
+      });      
     });
   });
 });

@@ -45,7 +45,7 @@ Simulator.prototype._playOnce = function(opts) {
 
 Simulator.prototype.play = function(opts) {
   return _(Array(opts.playCount))
-    .map(this._playOnce)
+    .map(_.partial(this._playOnce, opts))
     .value();
 }
 
@@ -63,7 +63,10 @@ Simulator.prototype.forecast = function(opts) {
     { likelihood: 90, actualTime: sortedResults[89].actualTime }
   ];
   
-  return forecasts;
+  return {
+    backlogSize: opts.backlogSize,
+    forecasts: forecasts
+  };
 }
 
 module.exports = Simulator;
