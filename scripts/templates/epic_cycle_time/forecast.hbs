@@ -1,0 +1,17 @@
+<p>Backlog size: {{backlogSize}}</p>
+
+<table class="aui">
+
+  <tr>
+    <th>Actual Time</th>
+    <th>% Confidence</th>
+  </tr>
+  
+  {{#each forecasts}}
+    <tr>
+      <td>{{duration actualTime 'weeks'}}</td>
+      <td>{{likelihood}} %</td>
+    </tr>
+  {{/each}}
+
+</table>

@@ -13,6 +13,8 @@ var DateRange = require('./date_range');
 var EpicDataset = require('./epic_dataset');
 var d3 = require('d3');
 var TimeChart = require('./ui/time_chart');
+var Simulator = require('./simulator');
+var Randomizer = require('./randomizer');
 
 $(function() {
   var jiraClient = new JiraClient(window.location.origin);
@@ -20,6 +22,10 @@ $(function() {
   Handlebars.registerHelper('issue_link', function() {
     var escapedKey = Handlebars.Utils.escapeExpression(this.key);
     return new Handlebars.SafeString("<a href='/browse/" + escapedKey + "'>" + escapedKey + "</a>");
+  });
+  Handlebars.registerHelper('duration', function(duration, unit) {
+    var durationString = Handlebars.Utils.escapeExpression(moment.duration(duration, 'days').as(unit).toFixed(2) + " " + unit);
+    return new Handlebars.SafeString(durationString);
   });
   Handlebars.registerHelper('date', function(date) {
     if (date) {
@@ -196,7 +202,7 @@ $(function() {
       var epicDataset = new EpicDataset(epics);
       
       var cycleTimeData = epicDataset.getCycleTimeData();
-      var wipData = epicDataset.getWorkInProgressData();
+      var workInProgressData = epicDataset.getWorkInProgressData();
       
       var timeChart = new TimeChart();
       timeChart.addSeries({
@@ -210,9 +216,20 @@ $(function() {
         key: 'wip',
         color: 'blue',
         axisOrientation: 'right',
-        data: wipData
+        data: workInProgressData
       });
-      timeChart.draw(target);      
+      timeChart.draw(target);
+      
+      var simulator = new Simulator(new Randomizer());
+      
+      var forecastResult = simulator.forecast({
+        backlogSize: 5,
+        cycleTimeData: cycleTimeData,
+        workInProgressData: workInProgressData
+      });
+      
+      var forecastTemplate = require('./templates/epic_cycle_time/forecast.hbs');
+      $(forecastTemplate(forecastResult)).appendTo(target);
     };
     
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
