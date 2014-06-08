@@ -5,7 +5,7 @@ function Simulator(randomizer) {
   _.bindAll(this);
 }
 
-Simulator.prototype._pickValues = function(data, count) {
+Simulator.prototype._pickValues = function(data, count, dateRange) {
   var pickValue = _.bind(function() {
     var index = this._randomizer.get(data.length - 1);
     return data[index].value;

@@ -1,5 +1,6 @@
 var Simulator = require('../scripts/simulator');
 var Randomizer = require('../scripts/randomizer');
+var DateRange = require('../scripts/date_range');
 var moment = require('moment');
 
 describe ('Simulator', function() {

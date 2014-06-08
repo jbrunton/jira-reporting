@@ -221,18 +221,51 @@ $(function() {
       timeChart.draw(target);
       
       var backlogSizeInput = $("<input>");
-      var backlogSizeSection = $("<p>Backlog size:</p>").append(backlogSizeInput).appendTo(target);      
-      var forecastSection = $("<div>").appendTo(target);
+      var backlogSizeSection = $("<p>Backlog size:</p>")
+        .append(backlogSizeInput)
+        .appendTo(target);
       
-      backlogSizeInput.blur(function() {      
+      var sampleDurationInput = $("<input>");
+      var sampleDurationUnitInput = $("<select><option value='days'>Days</option><option value='weeks'>Weeks</option><option value='months'>Months</option></select>");
+      var sampleDurationSection = $("<p>Sample duration:</p>")
+        .append(sampleDurationInput)
+        .append(sampleDurationUnitInput)
+        .appendTo(target);
+      
+      var forecastSection = $("<div>")
+        .appendTo(target);
         
+      function forecast() {
+        var sampleCycleTimeData, sampleWorkInProgressData;
         var backlogSize = Number(backlogSizeInput.val());
-        if (backlogSize != NaN) {
+        var dateRangeDuration = Number(sampleDurationInput.val());
+        if (backlogSize > 0 && dateRangeDuration > 0) {
+          if (dateRangeDuration > 0) {
+            var dateRangeEnd = moment();
+            var dateRangeUnits = sampleDurationUnitInput.val();
+            var dateRangeStart = dateRangeEnd.clone().subtract(moment.duration(dateRangeDuration, dateRangeUnits));
+            var dateRange = new DateRange(dateRangeStart, dateRangeEnd);
+
+            sampleCycleTimeData = _(cycleTimeData)
+              .filter(function(d) {
+                return dateRange.contains(d.date);
+              })
+              .value();
+            sampleWorkInProgressData = _(workInProgressData)
+              .filter(function(d) {
+                return dateRange.contains(d.date);
+              })
+              .value();
+          } else {
+            sampleCycleTimeData = cycleTimeDate;
+            sampleWorkInProgressData = workInProgressData;
+          }
+          
           var simulator = new Simulator(new Randomizer());
           var forecastResult = simulator.forecast({
             backlogSize: backlogSize,
-            cycleTimeData: cycleTimeData,
-            workInProgressData: workInProgressData
+            cycleTimeData: sampleCycleTimeData,
+            workInProgressData: sampleWorkInProgressData
           });
       
           var forecastTemplate = require('./templates/epic_cycle_time/forecast.hbs');
@@ -240,7 +273,11 @@ $(function() {
         } else {
           forecastSection.empty();
         }
-      });
+      }  
+      
+      backlogSizeInput.blur(forecast);
+      sampleDurationInput.blur(forecast);
+      sampleDurationUnitInput.change(forecast);    
     };
     
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
