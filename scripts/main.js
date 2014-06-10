@@ -311,6 +311,11 @@ $(function() {
       title: 'Epic Cycle Time',
       onDraw: drawEpicCycleTime
     })
+//    new Chart({
+//      menuItemId: 'epics-by-sprint',
+//      title: 'Epics by Sprint',
+//      onDraw: function() {}
+//    })
   ]);
   
 
