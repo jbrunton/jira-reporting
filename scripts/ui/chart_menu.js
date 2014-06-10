@@ -7,7 +7,7 @@ function ChartMenu() {
 
 ChartMenu.prototype.layout = function(target) {
   target = $(target || 'body');
-
+  
   function clickHandlerFor(chart) {
     return function() {
       var selectedClass = 'aui-nav-selected';
@@ -18,20 +18,30 @@ ChartMenu.prototype.layout = function(target) {
     }
   }
   
+  function findMenuLink(chart) {
+    return target.find('#' + chart.menuItemId);
+  }
+  
+  function createMenuLink(chart) {
+    return $("<li id='" + chart.menuItemId + "' original-title=''><a href='#'>" + chart.title + "</a></li>")
+      .click(clickHandlerFor(chart))
+  }
+  
   var chartNav = target.find('#ghx-chart-nav');
+  var chartCount = this._charts.length;
   if (chartNav.size()) {
     _(this._charts).each(function(chart) {
-      var menuLink = target.find('#' + chart.menuItemId);
+      var menuLink = findMenuLink(chart)
       if (!menuLink.size()) {
-        $("<li id='" + chart.menuItemId + "' original-title=''><a href='#'>" + chart.title + "</a></li>")
-          .click(clickHandlerFor(chart))
-          .appendTo(target.find('#ghx-chart-nav'));
-      } else {
-        var lastItem = chartNav.find('li').last();
-        if (lastItem.attr('id') != chart.menuItemId) {
-          menuLink
-            .appendTo('#ghx-chart-nav');
-        }
+        createMenuLink(chart).appendTo(chartNav);
+      }
+    });
+    var linkCount = chartNav.find('li').size();
+    _(this._charts).each(function(chart) {
+      var menuLink = findMenuLink(chart)
+      var menuLinkIndex = chartNav.find('li').index(menuLink);
+      if (menuLinkIndex < linkCount - chartCount) {
+        menuLink.appendTo(chartNav);
       }
     });
   }  
@@ -40,9 +50,13 @@ ChartMenu.prototype.layout = function(target) {
 ChartMenu.prototype.configureCharts = function(charts) {
   this._charts = charts;
   
+  var updateLayout = _.bind(function() {
+    this.layout();
+  }, this);
+
   var configureChartNav = _.bind(function() {
-    $("#ghx-chart-nav").on('DOMNodeInserted', this.layout);
-    $('#ghx-view-modes .aui-button').click(this.layout);    
+    $("#ghx-chart-nav").on('DOMNodeInserted', updateLayout);
+    $('#ghx-view-modes .aui-button').click(updateLayout);    
   }, this);
   
   var listenForChartNav = function() {
