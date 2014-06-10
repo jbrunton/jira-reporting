@@ -17,7 +17,9 @@ var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
 
 $(function() {
-  var jiraClient = new JiraClient(window.location.origin);
+  var jiraClient = new JiraClient({
+    domain: window.location.origin
+  });
 
   Handlebars.registerHelper('issue_link', function() {
     var escapedKey = Handlebars.Utils.escapeExpression(this.key);

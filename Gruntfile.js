@@ -6,7 +6,10 @@ module.exports = function(grunt) {
         src: 'build/test.js',
         options: {
           outfile: 'build/test/SpecRunner.html',
-          keepRunner: true
+          keepRunner: true,
+          vendor: [
+            'http://cdnjs.cloudflare.com/ajax/libs/jasmine-ajax/2.0.0/mock-ajax.js'
+          ]
         }
       }
     },
@@ -27,7 +30,7 @@ module.exports = function(grunt) {
       },
       debug: {
         src: ['vendor/**/*.js', 'scripts/**/*.js', 'scripts/**/*.hbs'],
-        dest: 'build/main.js',
+        dest: 'build/main.js'
       },
       release: {
         src: ['vendor/**/*.js', 'scripts/**/*.js', 'scripts/**/*.hbs'],
@@ -49,7 +52,7 @@ module.exports = function(grunt) {
         files: ['Gruntfile.js', 'manifest.json', 'vendor/**/*.js', 'scripts/**/*.js', 'scripts/**/*.hbs', 'test/**/*.js'],
         tasks: ['copy', 'browserify:debug', 'browserify:test', 'jasmine'],
         options: {
-          spawn: false,
+          spawn: false
         }
       }
     },
