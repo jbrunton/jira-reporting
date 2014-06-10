@@ -22,5 +22,19 @@ describe ('Sprint', function() {
           + sprint.rapidViewId + '&sprintId=' + sprint.id);
       expect(request.method).toBe('GET');
     });
+
+    it('returns a promise which resolves to the sprint report', function(done) {
+      // TODO: use handlebars to generate more complete JSON response
+      var dummyReport = {
+        sprints: [{ id: 123, name: 'Some Sprint' }]
+      };
+
+      request.response(createSuccessfulResponse(dummyReport));
+
+      promise.then(function(report) {
+        expect(report).toEqual(dummyReport);
+        done();
+      });
+    });
   });
 });
