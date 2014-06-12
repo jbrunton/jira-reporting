@@ -259,7 +259,7 @@ $(function() {
               })
               .value();
           } else {
-            sampleCycleTimeData = cycleTimeDate;
+            sampleCycleTimeData = cycleTimeData;
             sampleWorkInProgressData = workInProgressData;
           }
           
