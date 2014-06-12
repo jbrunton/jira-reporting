@@ -21,9 +21,25 @@ EpicDataset.prototype._dateRangeFilterFor = function(opts) {
   return _.partial(_.identity, true);
 }
 
+EpicDataset.prototype._exclusionFilterFor = function(opts) {
+  if (opts && opts.filter && opts.filter.exclude) {
+    var exclusionFilter = function(epic) {
+      var exclude = _(opts.filter.exclude).any(function(exclusionKey) {
+        return exclusionKey == epic.key;
+      });
+      return !exclude;
+    };
+    return exclusionFilter;
+  }
+
+  return _.partial(_.identity, true);
+}
+
 EpicDataset.prototype.getCycleTimeData = function(opts) {
   var dateRangeFilter = this._dateRangeFilterFor(opts);
+  var exclusionFilter = this._exclusionFilterFor(opts);
   return _(this._epics)
+    .filter(exclusionFilter)
     .map(function(epic) {
       return {
         date: epic.getCompletedDate(),
@@ -43,8 +59,13 @@ EpicDataset.prototype.getCycleTimeData = function(opts) {
 
 EpicDataset.prototype.getWorkInProgressData = function(opts) {
   var dateRangeFilter = this._dateRangeFilterFor(opts);
-  var events = this.getEvents(),
-    firstDate = _(events).first().date,
+  var events = this.getEvents(null, opts);
+
+  if (events.length == 0) {
+    return [];
+  }
+
+  var firstDate = _(events).first().date,
     lastDate = _(events).last().date;
     
   var data = [];
@@ -74,7 +95,8 @@ EpicDataset.prototype.getWorkInProgressData = function(opts) {
     .value();
 }
 
-EpicDataset.prototype.getEvents = function(filterKey) {
+EpicDataset.prototype.getEvents = function(filterKey, opts) {
+  var exclusionFilter = this._exclusionFilterFor(opts);
   function concatEvents(events, epic) {
     function eventsFor(key) {
       var fieldName = key + 'Date';
@@ -91,19 +113,18 @@ EpicDataset.prototype.getEvents = function(filterKey) {
       .concat(eventsFor('completed'));
   }
 
-  if (!this._events) {
-    this._events = _(
-      _(this._epics)
-        .reduce(concatEvents, [])
-    ).sortBy('dateEpoch').value();
-  }
-  
+  var epics = _(this._epics)
+    .filter(exclusionFilter)
+    .reduce(concatEvents, []);
+
+  var events = _(epics)
+    .sortBy('dateEpoch');
+
   if (filterKey) {
-    return _(this._events)
-      .where({ key: filterKey});
-  } else {
-    return this._events;
+    events = events.where({ key: filterKey });
   }
+
+  return events.value();
 }
 
 EpicDataset.prototype.getEventsInRange = function(dateRange, filterKey) {
@@ -130,7 +151,7 @@ EpicDataset.prototype.getCycleTimeForRange = function(dateRange) {
     return totalCycleTime / events.length;
   }
   
-  var eventsInRange = this.getEventsInRange(dateRange, 'completed');
+  var eventsInRange = this.getEvents(dateRange, 'completed');
   return averageCycleTime(eventsInRange);
 }
 

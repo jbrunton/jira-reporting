@@ -247,7 +247,7 @@ $(function() {
           }
 
           var sampleCycleTimeData = epicDataset.getCycleTimeData({
-            filter: filterOpts
+            filter: _.assign({ exclude: exclusionFilterInput.val().split(',') }, filterOpts)
           });
           var sampleWorkInProgressData = epicDataset.getWorkInProgressData({
             filter: filterOpts
@@ -269,6 +269,7 @@ $(function() {
       
       backlogSizeInput.blur(forecast);
       sampleDurationInput.blur(forecast);
+      exclusionFilterInput.blur(forecast);
       sampleDurationUnitInput.change(forecast);
     };
     
