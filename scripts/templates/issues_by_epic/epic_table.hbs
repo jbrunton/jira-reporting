@@ -1,0 +1,35 @@
+<h3>
+  {{fields.summary}}
+</h3>
+
+<table class="aui">
+  
+  <tr>
+    <th width="10%"></th>
+    <th width="30%">Summary</th>
+    <th width="22%">Started</th>
+    <th width="22%">Completed</th>
+    <th width="16%">Cycle Time</th>
+  </tr>
+  
+  <tr>
+    <td width="10%">{{issue_link}}</td>
+    <th width="30%">{{fields.summary}}</th>
+    <th width="22%">{{date startedDate}}</th>
+    <th width="22%">{{date completedDate}}</th>
+    <th width="16%">{{cycle_time}}</th>
+  </tr>
+  
+  {{#each issues}}
+  
+    <tr>
+      <td width="10%">{{issue_link}}</td>
+      <td width="30%">{{fields.summary}}</td>
+      <td width="22%">{{date startedDate}}</td>
+      <td width="22%">{{date completedDate}}</td>
+      <td width="16%">{{cycle_time}}</td>
+    </tr>
+  
+  {{/each}}
+
+</table>

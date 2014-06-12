@@ -130,9 +130,7 @@ $(function() {
   }
   
   function drawIssuesByEpic(target) {
-    var tableTemplate = require("./templates/issues_by_epic/table.hbs");
-    var epicRowTemplate = require('./templates/issues_by_epic/epic_row.hbs');
-    var issueRowTemplate = require('./templates/issues_by_epic/issue_row.hbs');
+    var epicTableTemplate = require('./templates/issues_by_epic/epic_table.hbs');
     var spinnerRowTemplate = require('./templates/spinner_row.hbs');
 
     var indicator = new Indicator(function(count, position) {
@@ -140,10 +138,8 @@ $(function() {
     });
     indicator.display(target);
 
-    var table = $(tableTemplate()).hide().appendTo(target);
-
     function drawEpic(epic) {
-      var placeholderRow = $("<tr>").appendTo(table);
+      var epicPlaceholder = $("<div>").appendTo(target);
 
       function drawIssue(issue) {
         $(issueRowTemplate(issue)).insertAfter(placeholderRow);
@@ -151,15 +147,17 @@ $(function() {
 
       return epic.analyze()
         .then(function() {
-          Q.all(
-            _(epic.issues)
-              .reverse()
-              .map(drawIssue)
-              .value()
-          ).then(function() {
-            placeholderRow.replaceWith(epicRowTemplate(epic));
-            indicator.increment();
-          });
+          epicPlaceholder.replaceWith(epicTableTemplate(epic));
+          indicator.increment();
+          // Q.all(
+          //   _(epic.issues)
+          //     .reverse()
+          //     .map(drawIssue)
+          //     .value()
+          // ).then(function() {
+          //   placeholderRow.replaceWith(epicRowTemplate(epic));
+          //   indicator.increment();
+          // });
         });
     }
 
