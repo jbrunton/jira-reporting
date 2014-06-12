@@ -59,9 +59,9 @@ TimeChart.prototype.getXDomain = function() {
 }
 
 TimeChart.prototype.draw = function(target) {
-  var w = 1000;
-	var h = 300;
-	var padding = 30;
+  var w = $(target).width();
+	var h = w * 0.4;
+	var padding = 60;
 	
 	
 	var xScale = d3.time.scale()

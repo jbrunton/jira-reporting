@@ -216,21 +216,29 @@ $(function() {
       var cycleTimeData = epicDataset.getCycleTimeData();
       var workInProgressData = epicDataset.getWorkInProgressData();
       
-      var timeChart = new TimeChart();
-      timeChart.addSeries({
-        key: 'cycle_time',
-        color: 'red',
-        circle: true,
-        axisOrientation: 'left',
-        data: cycleTimeData
-      });
-      timeChart.addSeries({
-        key: 'wip',
-        color: 'blue',
-        axisOrientation: 'right',
-        data: workInProgressData
-      });
-      timeChart.draw(target);
+      var chartArea = $("<div>").appendTo(target);
+      
+      function drawTimeChart() {
+        chartArea.empty();
+        var timeChart = new TimeChart();
+        timeChart.addSeries({
+          key: 'cycle_time',
+          color: 'red',
+          circle: true,
+          axisOrientation: 'left',
+          data: cycleTimeData
+        });
+        timeChart.addSeries({
+          key: 'wip',
+          color: 'blue',
+          axisOrientation: 'right',
+          data: workInProgressData
+        });
+        timeChart.draw(chartArea.get(0)); 
+      }
+      
+      drawTimeChart();
+      $(window).resize(drawTimeChart);
 
       var reportTemplate = require("./templates/epic_cycle_time/report.hbs");
       var reportSection = $(reportTemplate()).appendTo(target);
