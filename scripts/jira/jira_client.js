@@ -3,12 +3,12 @@ var Q = require('q');
 var _ = require('lodash');
 var RapidView = require('./rapid_view');
 
-function JiraClient(domain) {
-  if (!domain) {
+function JiraClient(opts) {
+  if (!opts.domain) {
     throw "Expected domain to be specified.";
   }
-  
-  this._domain = domain;
+
+  this._domain = opts.domain;
 
   _.bindAll(this);
 }

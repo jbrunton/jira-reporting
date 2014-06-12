@@ -17,7 +17,9 @@ var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
 
 $(function() {
-  var jiraClient = new JiraClient(window.location.origin);
+  var jiraClient = new JiraClient({
+    domain: window.location.origin
+  });
 
   Handlebars.registerHelper('issue_link', function() {
     var escapedKey = Handlebars.Utils.escapeExpression(this.key);
@@ -257,7 +259,7 @@ $(function() {
               })
               .value();
           } else {
-            sampleCycleTimeData = cycleTimeDate;
+            sampleCycleTimeData = cycleTimeData;
             sampleWorkInProgressData = workInProgressData;
           }
           
@@ -285,11 +287,35 @@ $(function() {
       .then(loadEpics)
       .then(analyzeEpics)
       .then(drawChart);
-    
-    
-    
-  	
-	
+  }
+
+  function drawEpicsBySprint(target) {
+
+    var reportTemplate = require("./templates/epics_by_sprint/sprint_report.hbs");
+
+    var loadSprints = _.bind(function(rapidView) {
+      return rapidView.getSprints();
+    }, this);
+
+    var loadReports = _.bind(function(sprints) {
+      return Q.all(
+        _(sprints).map(function(sprint) {
+          return sprint.getReport();
+        }).value()
+      );
+    }, this);
+
+    var drawReports = _.bind(function(reports) {
+      _(reports).map(function(report) {
+        $(reportTemplate(report)).appendTo(target);
+      });
+    }, this);
+
+    var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+    jiraClient.getRapidViewById(rapidViewId)
+      .then(loadSprints)
+      .then(loadReports)
+      .then(drawReports);
   }
   
   var chartMenu = new ChartMenu();
@@ -308,6 +334,11 @@ $(function() {
       menuItemId: 'epic-cycle-time',
       title: 'Epic Cycle Time',
       onDraw: drawEpicCycleTime
+    }),
+    new Chart({
+      menuItemId: 'epics-by-sprint',
+      title: 'Epics by Sprint',
+      onDraw: drawEpicsBySprint
     })
   ]);
   
