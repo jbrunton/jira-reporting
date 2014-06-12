@@ -1,10 +1,28 @@
 var _ = require('lodash');
+var moment = require('moment');
+var DateRange = require('./date_range');
 
 function EpicDataset(epics) {
   this._epics = epics;
+  _.bindAll(this);
 }
 
-EpicDataset.prototype.getCycleTimeData = function() {
+EpicDataset.prototype._dateRangeFilterFor = function(opts) {
+  if (opts && opts.filter && opts.filter.dateRange) {
+    var dateRangeEnd = moment();
+    var dateRangeStart = dateRangeEnd.clone().subtract(moment.duration(opts.filter.dateRange.duration, opts.filter.dateRange.units));
+    var dateRange = new DateRange(dateRangeStart, dateRangeEnd);
+    var dateRangeFilter = function(d) {
+      return dateRange.contains(d.date);
+    };
+    return dateRangeFilter;
+  }
+
+  return _.partial(_.identity, true);
+}
+
+EpicDataset.prototype.getCycleTimeData = function(opts) {
+  var dateRangeFilter = this._dateRangeFilterFor(opts);
   return _(this._epics)
     .map(function(epic) {
       return {
@@ -16,13 +34,15 @@ EpicDataset.prototype.getCycleTimeData = function() {
       // TODO: why were some dates null?  we shouldn't need to filter here.
       return d.date != null;
     })
+    .filter(dateRangeFilter)
     .sortBy(function(d) {
       return d.date.valueOf();
     })
     .value();
 }
 
-EpicDataset.prototype.getWorkInProgressData = function() {
+EpicDataset.prototype.getWorkInProgressData = function(opts) {
+  var dateRangeFilter = this._dateRangeFilterFor(opts);
   var events = this.getEvents(),
     firstDate = _(events).first().date,
     lastDate = _(events).last().date;
@@ -49,7 +69,9 @@ EpicDataset.prototype.getWorkInProgressData = function() {
       });
     }
   }
-  return data;
+  return _(data)
+    .filter(dateRangeFilter)
+    .value();
 }
 
 EpicDataset.prototype.getEvents = function(filterKey) {

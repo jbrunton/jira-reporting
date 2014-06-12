@@ -227,36 +227,32 @@ $(function() {
 
       var backlogSizeInput = reportSection.find('#backlog_size');
       var sampleDurationInput = reportSection.find('#sample_duration');
-      var sampleDurationUnitInput = reportSection.find('#sample_duration_unit');
+      var sampleDurationUnitsInput = reportSection.find('#sample_duration_units');
       var exclusionFilterInput = reportSection.find('#exclusion_filter');
       var forecastSection = reportSection.find('#forecast_section');
         
       function forecast() {
-        var sampleCycleTimeData, sampleWorkInProgressData;
         var backlogSize = Number(backlogSizeInput.val());
         var dateRangeDuration = Number(sampleDurationInput.val());
-        if (backlogSize > 0 && dateRangeDuration > 0) {
-          if (dateRangeDuration > 0) {
-            var dateRangeEnd = moment();
-            var dateRangeUnits = sampleDurationUnitInput.val();
-            var dateRangeStart = dateRangeEnd.clone().subtract(moment.duration(dateRangeDuration, dateRangeUnits));
-            var dateRange = new DateRange(dateRangeStart, dateRangeEnd);
+        var dateRangeUnits = sampleDurationUnitsInput.val();
 
-            sampleCycleTimeData = _(cycleTimeData)
-              .filter(function(d) {
-                return dateRange.contains(d.date);
-              })
-              .value();
-            sampleWorkInProgressData = _(workInProgressData)
-              .filter(function(d) {
-                return dateRange.contains(d.date);
-              })
-              .value();
-          } else {
-            sampleCycleTimeData = cycleTimeData;
-            sampleWorkInProgressData = workInProgressData;
+        if (backlogSize > 0 && dateRangeDuration > 0) {
+          var filterOpts = {
+          };
+          if (dateRangeDuration > 0) {
+            filterOpts.dateRange = {
+              duration: dateRangeDuration,
+              units: dateRangeUnits
+            }
           }
-          
+
+          var sampleCycleTimeData = epicDataset.getCycleTimeData({
+            filter: filterOpts
+          });
+          var sampleWorkInProgressData = epicDataset.getWorkInProgressData({
+            filter: filterOpts
+          });
+
           var simulator = new Simulator(new Randomizer());
           var forecastResult = simulator.forecast({
             backlogSize: backlogSize,
