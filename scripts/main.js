@@ -17,6 +17,16 @@ var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
 
 $(function() {
+
+  $(document).on("click", function (event) {
+    var outsideDialog = !$(event.target).closest(".aui-inline-dialog").size();
+    var outsideTrigger = !$(event.target).closest(".aui-inline-dialog-trigger").size();
+    if (outsideDialog && outsideTrigger) {
+      $(".jira-reporting.aui-inline-dialog").remove();
+    }
+  });
+
+
   var jiraClient = new JiraClient({
     domain: window.location.origin
   });

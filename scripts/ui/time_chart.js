@@ -1,6 +1,7 @@
 var _ = require('lodash');
 var d3 = require('d3');
 var moment = require('moment');
+var $ = require('jquery');
 
 function TimeChart() {
   this._series = [];
@@ -84,6 +85,8 @@ TimeChart.prototype.draw = function(target) {
 		.attr("class", "axis")
 		.attr("transform", "translate(0," + (h - padding) + ")")
 		.call(xAxis);
+
+  var inlineDialogTemplate = require('../templates/inline_dialog.hbs');
 		
 	var drawSeries = _.bind(function(series) {
     var yDomain = [0, d3.max(series.data, function(d) { return d.value; })];
@@ -102,22 +105,7 @@ TimeChart.prototype.draw = function(target) {
       .attr("transform", "translate(" + (series.axisOrientation == "left" ? padding : (w - padding * 2)) + ",0)")
       .call(yAxis);
 
-    if (series.circle) {
-      svg.selectAll("circle." + series.key)
-        .data(series.data)
-        .enter()
-        .append("circle")
-        .classed(series.key, true)
-        .style("fill", series.color)
-        .attr("cx", function(d) {
-           return xScale(d.date.toDate());
-        })
-        .attr("cy", function(d) {
-           return yScale(d.value);
-        })
-        .attr("r", 4);
-    }
-      
+
     var lineFunction = d3.svg.line()
       .x(function(d) {
         return xScale(d.date.toDate());
@@ -126,12 +114,43 @@ TimeChart.prototype.draw = function(target) {
         return yScale(d.value);
       })
       .interpolate("basis");
-      
+
     svg.append("path")
       .attr("d", lineFunction(series.data))
       .attr("stroke", series.color)
       .attr("stroke-width", 2)
       .attr("fill", "none");
+
+    if (series.circle) {
+      svg.selectAll("circle.aui-inline-dialog-trigger." + series.key)
+        .data(series.data)
+        .enter()
+        .append("circle")
+        .classed(series.key, true)
+        .classed('aui-inline-dialog-trigger', true)
+        .style("fill", series.color)
+        .attr("cx", function(d) {
+           return xScale(d.date.toDate());
+        })
+        .attr("cy", function(d) {
+           return yScale(d.value);
+        })
+        .attr("r", 4)
+        .style("cursor", "pointer")
+        .on("click", function(d) {
+          $(".jira-reporting.aui-inline-dialog").remove();
+
+          var dialog = $(inlineDialogTemplate(d.epic)).appendTo(target);
+          var arrow = dialog.find(".arrow");
+
+          var left = d3.event.clientX + 7;
+          var top = d3.event.clientY - dialog.height() / 2;
+          dialog.offset({ left: left, top: top});
+
+          var arrowTop = (dialog.height() - arrow.height()) / 2;
+          arrow.css({ top: arrowTop });
+        });
+    }
       
   }, this);
 		

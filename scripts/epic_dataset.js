@@ -43,7 +43,8 @@ EpicDataset.prototype.getCycleTimeData = function(opts) {
     .map(function(epic) {
       return {
         date: epic.getCompletedDate(),
-        value: epic.getCycleTime('day')
+        value: epic.getCycleTime('day'),
+        epic: epic
       };
     })
     .filter(function(d) {
