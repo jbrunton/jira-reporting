@@ -221,21 +221,15 @@ $(function() {
         data: workInProgressData
       });
       timeChart.draw(target);
-      
-      var backlogSizeInput = $("<input>");
-      var backlogSizeSection = $("<p>Backlog size:</p>")
-        .append(backlogSizeInput)
-        .appendTo(target);
-      
-      var sampleDurationInput = $("<input>");
-      var sampleDurationUnitInput = $("<select><option value='days'>Days</option><option value='weeks'>Weeks</option><option value='months'>Months</option></select>");
-      var sampleDurationSection = $("<p>Sample duration:</p>")
-        .append(sampleDurationInput)
-        .append(sampleDurationUnitInput)
-        .appendTo(target);
-      
-      var forecastSection = $("<div>")
-        .appendTo(target);
+
+      var reportTemplate = require("./templates/epic_cycle_time/report.hbs");
+      var reportSection = $(reportTemplate()).appendTo(target);
+
+      var backlogSizeInput = reportSection.find('#backlog_size');
+      var sampleDurationInput = reportSection.find('#sample_duration');
+      var sampleDurationUnitInput = reportSection.find('#sample_duration_unit');
+      var exclusionFilterInput = reportSection.find('#exclusion_filter');
+      var forecastSection = reportSection.find('#forecast_section');
         
       function forecast() {
         var sampleCycleTimeData, sampleWorkInProgressData;
@@ -279,7 +273,7 @@ $(function() {
       
       backlogSizeInput.blur(forecast);
       sampleDurationInput.blur(forecast);
-      sampleDurationUnitInput.change(forecast);    
+      sampleDurationUnitInput.change(forecast);
     };
     
     var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
