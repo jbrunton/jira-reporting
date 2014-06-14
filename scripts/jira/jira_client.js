@@ -116,11 +116,15 @@ JiraClient.prototype.getEpicLinkFieldId = function () {
 }
 
 JiraClient.prototype.getFavouriteFilters = function() {
+  return this._get('filter/favourite');
+}
+
+JiraClient.prototype._get = function(endpoint) {
   return $.ajax({
-		type: 'GET',
-		url: this._domain + "/rest/2/filter/favourite",
-		contentType: "application/json"
-	});
+    type: 'GET',
+    url: this._domain + '/rest/2/' + endpoint,
+    contentType: 'application/json'
+  });
 }
 
 module.exports = JiraClient;

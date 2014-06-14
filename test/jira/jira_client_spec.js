@@ -50,4 +50,12 @@ describe ('JiraClient', function() {
     });
   });
   
+  describe ('#_get', function() {
+    it ("makes a GET request to the given endpoint", function() {
+      var promise = jiraClient._get('search');
+      var request = jasmine.Ajax.requests.mostRecent();
+      expect(request.url).toBe('http://www.example.com/rest/2/search');
+      expect(request.method).toBe('GET');
+    });
+  });
 });
