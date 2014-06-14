@@ -14,7 +14,7 @@ ChartMenu.prototype.layout = function(target) {
       var menuItemSelector = '#ghx-chart-nav li';
       target.find(menuItemSelector).removeClass(selectedClass);
       $(this).closest(menuItemSelector).addClass(selectedClass);
-      chart.draw();
+      chart.draw(target);
     }
   }
   

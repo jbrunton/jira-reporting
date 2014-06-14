@@ -13,12 +13,12 @@ function Chart(opts) {
   _.bindAll(this);
 }
 
-Chart.prototype.draw = function() {
+Chart.prototype.draw = function(target) {
   _(['message', 'intro', 'header', 'content'])
     .each(function(divName) {
-      $('#ghx-chart-' + divName).empty();
+      $(target).find('#ghx-chart-' + divName).empty();
     });
-  this.onDraw($('#ghx-chart-content').get(0));
+  this.onDraw($(target).find('#ghx-chart-content').get(0));
 }
 
 module.exports = Chart;

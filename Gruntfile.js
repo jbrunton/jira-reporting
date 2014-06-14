@@ -6,10 +6,7 @@ module.exports = function(grunt) {
         src: 'build/test.js',
         options: {
           outfile: 'build/test/SpecRunner.html',
-          keepRunner: true,
-          vendor: [
-            'http://cdnjs.cloudflare.com/ajax/libs/jasmine-ajax/2.0.0/mock-ajax.js'
-          ]
+          keepRunner: true
         }
       }
     },
