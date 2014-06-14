@@ -11,16 +11,16 @@ describe ('JiraClient', function() {
     });
   });
 
-  it('requires an opts param to be specified', function() {
+  it('requires an opts param', function() {
     expect(function() {
       new JiraClient();
     }).toThrow("Expected at least one argument.");
   });
 
-  it('requires a domain to be specified', function() {
+  it('requires a domain', function() {
     expect(function() {
       new JiraClient({});
-    }).toThrow("Expected domain to be specified.");
+    }).toThrow("Expected domain to be defined.");
   });
   
   describe ('#getFavouriteFilters', function() {

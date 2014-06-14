@@ -2,15 +2,12 @@ var $ = require('jquery');
 var Q = require('q');
 var _ = require('lodash');
 var RapidView = require('./rapid_view');
+var Validator = require('../validator');
 
 function JiraClient(opts) {
-  if (!opts) {
-    throw "Expected at least one argument.";
-  }
-  
-  if (!opts.domain) {
-    throw "Expected domain to be specified.";
-  }
+  new Validator()
+    .hasArguments(arguments)
+    .isNotNull(opts.domain, 'domain');
 
   this._domain = opts.domain;
   this._resultCache = {};
