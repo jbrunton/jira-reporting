@@ -4,6 +4,10 @@ var _ = require('lodash');
 var RapidView = require('./rapid_view');
 
 function JiraClient(opts) {
+  if (!opts) {
+    throw "Expected at least one argument.";
+  }
+  
   if (!opts.domain) {
     throw "Expected domain to be specified.";
   }
@@ -109,6 +113,22 @@ JiraClient.prototype.getEpicLinkFieldId = function () {
       });
   }
   return this._promiseForEpicLinkFieldId;
+}
+
+JiraClient.prototype.getFavouriteFilters = function() {
+  var deferred = Q.defer();
+  $.ajax({
+		type: 'GET',
+		url: this._domain + "/rest/2/filter/favourite",
+		contentType: "application/json",
+		error: function() {
+			deferred.reject();
+		},
+		success: function(filters) {
+			deferred.resolve(filters);
+		}
+	});
+	return deferred.promise;
 }
 
 module.exports = JiraClient;
