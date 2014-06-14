@@ -57,5 +57,19 @@ describe ('JiraClient', function() {
       expect(request.url).toBe('http://www.example.com/rest/2/search');
       expect(request.method).toBe('GET');
     });
+    
+    it ("caches the response if opts.cache = true", function() {
+      jiraClient._get('search', { cache: true });
+      jiraClient._get('search', { cache: true });
+      
+      expect(jasmine.Ajax.requests.count()).toBe(1);
+    });
+    
+    it ("doesn't cache the result if opts.cache = false", function() {
+      jiraClient._get('search', { cache: false });
+      jiraClient._get('search', { cache: false });
+      
+      expect(jasmine.Ajax.requests.count()).toBe(2);
+    });
   });
 });

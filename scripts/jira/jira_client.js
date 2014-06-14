@@ -13,6 +13,7 @@ function JiraClient(opts) {
   }
 
   this._domain = opts.domain;
+  this._resultCache = {};
 
   _.bindAll(this);
 }
@@ -119,12 +120,20 @@ JiraClient.prototype.getFavouriteFilters = function() {
   return this._get('filter/favourite');
 }
 
-JiraClient.prototype._get = function(endpoint) {
-  return $.ajax({
-    type: 'GET',
-    url: this._domain + '/rest/2/' + endpoint,
-    contentType: 'application/json'
-  });
+JiraClient.prototype._get = function(endpoint, opts) {
+  var cache = opts && opts.cache;
+  var cachedResult = this._resultCache[endpoint];
+  var result = (cache && cachedResult)
+    ? cachedResult
+    : $.ajax({
+        type: 'GET',
+        url: this._domain + '/rest/2/' + endpoint,
+        contentType: 'application/json'
+      });
+  if (cache && !cachedResult) {
+    this._resultCache[endpoint] = result;
+  }
+  return result;
 }
 
 module.exports = JiraClient;

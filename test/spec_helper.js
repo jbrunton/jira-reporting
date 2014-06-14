@@ -1,5 +1,6 @@
 beforeEach(function() {
   jasmine.Ajax.install();
+  jasmine.Ajax.requests.reset();
 });
 
 global.createSuccessfulResponse = function(responseData) {
