@@ -1,7 +1,14 @@
 var _ = require('lodash');
 var $ = require('jquery');
+var Validator = require('../validator');
 
 function Chart(opts) {
+  new Validator()
+    .hasArguments(arguments)
+    .isNotNull(opts.menuItemId, 'menuItemId')
+    .isNotNull(opts.title, 'title')
+    .isNotNull(opts.onDraw, 'onDraw');
+  
   _.assign(this, opts);
   _.bindAll(this);
 }
