@@ -1,9 +1,11 @@
 var $ = require('jquery');
 var _ = require('lodash');
+var Factory = require('rosie').Factory;
 var Chart = require('../../scripts/ui/chart');
+var Validator = require('../../scripts/validator');
 
 describe ('Chart', function() {
-  var validOpts, target;
+  var validOpts, target, jiraClient;
   
   beforeEach(function() {
     validOpts = {
@@ -11,6 +13,8 @@ describe ('Chart', function() {
       title: 'Some Chart',
       onDraw: function() {}
     };
+    
+    jiraClient = Factory.build('jira_client');
 
     target = $(
       "<div>" +
@@ -23,43 +27,41 @@ describe ('Chart', function() {
   });
   
   describe ('constructor', function() {
+    // it ("requires a jira client", function() {
+    //   expect(function() {
+    //     new Chart(null, validOpts);
+    //   }).toThrow(Validator.messages.requires('jiraClient'));
+    // });
     
     it ('requires an opts param', function() {
       expect(function() {
-        new Chart();
-      }).toThrow("Expected at least one argument.");
+        new Chart(jiraClient, null);
+      }).toThrow(Validator.messages.requires('opts'));
     });
 
     it ('requires an id for the menu item', function() {
       delete validOpts.menuItemId;
       expect(function() {
-        new Chart(validOpts);
-      }).toThrow("Expected menuItemId to be defined.");
+        new Chart(jiraClient, validOpts);
+      }).toThrow(Validator.messages.requires('menuItemId'));
     });
     
     it ('requires a title', function() {
       delete validOpts.title;
       expect(function() {
-        new Chart(validOpts);
-      }).toThrow("Expected title to be defined.");
-    });
-    
-    it ('requires an onDraw callback', function() {
-      delete validOpts.onDraw;
-      expect(function() {
-        new Chart(validOpts);
-      }).toThrow("Expected onDraw to be defined.");
+        new Chart(jiraClient, validOpts);
+      }).toThrow(Validator.messages.requires('title'));
     });
   });
   
   describe ('#draw', function() {    
     it ("clears the ghx message, intro and header elements", function() {
-      new Chart(validOpts).draw(target);
+      new Chart(jiraClient, validOpts).draw(target);
       expect($(target).find('#ghx-chart-message')).toBeEmpty();
     });
     
     it ("invokes the given onDraw method on the ghx chart", function() {
-      new Chart(_.assign(validOpts, {
+      new Chart(jiraClient, _.assign(validOpts, {
         onDraw: function(target) {
           $("<p>Hello, World!</p>").appendTo(target);
         }
@@ -72,7 +74,7 @@ describe ('Chart', function() {
     var someInput, someOptions, chart, chartContent;
     
     beforeEach(function() {
-      chart = new Chart(_.assign(validOpts, {
+      chart = new Chart(jiraClient, _.assign(validOpts, {
         onDraw: function(target) {
           someInput = $("<input id='some-input'>").appendTo(target);
           someOptions = $("<select id='some-options'><option value='some-value'>Some Value</option></select>").appendTo(target);

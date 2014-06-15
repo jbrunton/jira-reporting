@@ -23,15 +23,21 @@ describe ('Validator', function() {
     });
   });
   
-  describe ('#isNotNull', function() {
+  describe ('#requires', function() {
     it ("raises an error if the given value not defined", function() {
       expect(function() {
-        validator.isNotNull(null, 'myValue');
-      }).toThrow("Expected myValue to be defined.");
+        validator.requires(null, 'myValue');
+      }).toThrow("Required myValue.");
     });
     
     it ("passes if the given value is defined, and returns the validator object", function() {
-      expect(validator.isNotNull('some value', 'myValue')).toBe(validator);
+      expect(validator.requires('some value', 'myValue')).toBe(validator);
+    });
+  });
+  
+  describe ('.messages.requires', function() {
+    it ("returns the error message for when a value is missing", function() {
+      expect(Validator.messages.requires('foo')).toEqual("Required foo.");
     });
   });
 });

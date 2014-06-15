@@ -2,16 +2,25 @@ var _ = require('lodash');
 var $ = require('jquery');
 var Validator = require('../validator');
 
-function Chart(opts) {
+function Chart(jiraClient, opts) {
   new Validator()
-    .hasArguments(arguments)
-    .isNotNull(opts.menuItemId, 'menuItemId')
-    .isNotNull(opts.title, 'title')
-    .isNotNull(opts.onDraw, 'onDraw');
-  
+//    .requires(jiraClient, 'jiraClient')
+    .requires(opts, 'opts')
+    .requires(opts.menuItemId, 'menuItemId')
+    .requires(opts.title, 'title');
+
+  this._jiraClient = jiraClient;
   _.assign(this, opts);
   
   _.bindAll(this);
+}
+
+Chart.prototype.onDraw = function(target) {
+  
+}
+
+Chart.prototype.onUpdate = function(target, formValues) {
+  
 }
 
 Chart.prototype.draw = function(target) {

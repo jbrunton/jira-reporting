@@ -15,7 +15,7 @@ describe ('ChartMenu', function() {
   beforeEach(function() {
     chartMenu = new ChartMenu();
     chartMenu.configureCharts([
-      new Chart({
+      new Chart(null, {
         menuItemId: 'custom-chart',
         title: 'Custom Chart',
         onDraw: function() {}
