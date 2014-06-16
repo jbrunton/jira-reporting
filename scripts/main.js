@@ -328,7 +328,7 @@ $(function() {
   
   var chartMenu = new ChartMenu();
   chartMenu.configureCharts([
-    new Chart({
+    new Chart(jiraClient, {
       menuItemId: 'issues-by-epic',
       title: 'Issues By Epic',
       onDraw: drawIssuesByEpic
@@ -343,8 +343,8 @@ $(function() {
     //   title: 'Epic Cycle Time',
     //   onDraw: drawEpicCycleTime
     // }),
-    new EpicCycleTimeChart(),
-    new Chart({
+    new EpicCycleTimeChart(jiraClient),
+    new Chart(jiraClient, {
       menuItemId: 'epics-by-sprint',
       title: 'Epics by Sprint',
       onDraw: drawEpicsBySprint
