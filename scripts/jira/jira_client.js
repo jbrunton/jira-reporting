@@ -77,6 +77,7 @@ JiraClient.prototype.search = function(opts) {
 
 JiraClient.prototype.getRapidViews = function() {
   var createViews = _.bind(function(result) {
+    var self = this;
     return _(result.views)
       .map(function(view) {
 	      return new RapidView(self, view);
