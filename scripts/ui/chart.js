@@ -4,7 +4,7 @@ var Validator = require('../validator');
 
 function Chart(jiraClient, opts) {
   new Validator()
-//    .requires(jiraClient, 'jiraClient')
+    .requires(jiraClient, 'jiraClient')
     .requires(opts, 'opts')
     .requires(opts.menuItemId, 'menuItemId')
     .requires(opts.title, 'title');

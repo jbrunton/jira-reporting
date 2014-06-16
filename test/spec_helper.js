@@ -1,4 +1,6 @@
 var $ = require('jquery');
+var _ = require('lodash');
+var Factory = require('rosie').Factory;
 
 beforeEach(function() {
   jasmine.Ajax.install();
@@ -24,3 +26,5 @@ global.createFakeDom = function() {
     "</div>"
   ).get(0);
 }
+
+global.build = _.bind(Factory.build, Factory);

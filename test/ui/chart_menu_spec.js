@@ -13,9 +13,10 @@ describe ('ChartMenu', function() {
   var chartMenu;
 
   beforeEach(function() {
+    var jiraClient = build('jira_client');
     chartMenu = new ChartMenu();
     chartMenu.configureCharts([
-      new Chart(null, {
+      new Chart(jiraClient, {
         menuItemId: 'custom-chart',
         title: 'Custom Chart',
         onDraw: function() {}

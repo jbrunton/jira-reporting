@@ -3,13 +3,14 @@ var Chart = require('../ui/chart');
 var TimeChart = require('../ui/time_chart');
 var reportTemplate = require('./templates/cycle_time_report.hbs');
 
-function EpicCycleTimeChart() {
+function EpicCycleTimeChart(jiraClient) {
+  Chart.call(this, jiraClient, {
+    menuItemId: 'epic-cycle-time',
+    title: 'Epic Cycle Time'
+  });
 }
 
-EpicCycleTimeChart.prototype = new Chart(null, {
-  menuItemId: 'epic-cycle-time',
-  title: 'Epic Cycle Time'
-});
+EpicCycleTimeChart.prototype = Chart.prototype;
 
 EpicCycleTimeChart.prototype.onDraw = function(target) {
   var report = $(reportTemplate()).appendTo(target);

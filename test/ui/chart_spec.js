@@ -1,6 +1,5 @@
 var $ = require('jquery');
 var _ = require('lodash');
-var Factory = require('rosie').Factory;
 var Chart = require('../../scripts/ui/chart');
 var Validator = require('../../scripts/validator');
 
@@ -14,7 +13,7 @@ describe ('Chart', function() {
       onDraw: function() {}
     };
     
-    jiraClient = Factory.build('jira_client');
+    jiraClient = build('jira_client');
 
     target = $(
       "<div>" +
@@ -27,11 +26,11 @@ describe ('Chart', function() {
   });
   
   describe ('constructor', function() {
-    // it ("requires a jira client", function() {
-    //   expect(function() {
-    //     new Chart(null, validOpts);
-    //   }).toThrow(Validator.messages.requires('jiraClient'));
-    // });
+    it ("requires a jira client", function() {
+      expect(function() {
+        new Chart(null, validOpts);
+      }).toThrow(Validator.messages.requires('jiraClient'));
+    });
     
     it ('requires an opts param', function() {
       expect(function() {

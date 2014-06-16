@@ -5,7 +5,8 @@ describe ('EpicCycleTimeChart', function() {
   var chart;
   
   beforeEach(function() {
-    chart = new EpicCycleTimeChart();
+    var jiraClient = build('jira_client');
+    chart = new EpicCycleTimeChart(jiraClient);
   });
   
   describe ('constructor', function() {
