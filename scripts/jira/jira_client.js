@@ -124,11 +124,11 @@ JiraClient.prototype._get = function(endpoint, opts) {
 
   var result = (cache && cachedResult)
     ? cachedResult
-    : $.ajax({
+    : Q($.ajax({
         type: 'GET',
         url: baseUrl + endpoint,
         contentType: 'application/json'
-      });
+      }));
   if (cache && !cachedResult) {
     this._resultCache[endpoint] = result;
   }
