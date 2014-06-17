@@ -5,6 +5,7 @@ var Chart = require('../ui/chart');
 var TimeChart = require('../ui/time_chart');
 var reportTemplate = require('./templates/cycle_time_report.hbs');
 var Indicator = require('../ui/indicator');
+var EpicDataset = require('../epic_dataset');
 
 function EpicCycleTimeChart(jiraClient) {
   Chart.call(this, jiraClient, {
@@ -41,18 +42,46 @@ EpicCycleTimeChart.prototype.onDraw = function(target) {
     );
   };
   
-  var drawChart = function() {
+  var drawReport = function(epics) {
     indicator.remove();
+
     var chartArea = report.find('#timechart');
-    chartArea.html('Time Chart');
+    var epicDataset = new EpicDataset(epics);
+    
+    var cycleTimeData = epicDataset.getCycleTimeData();
+    var workInProgressData = epicDataset.getWorkInProgressData();
+    
+
     report.show();
+
+    function drawChart() {
+      chartArea.empty();
+      var timeChart = new TimeChart();
+      timeChart.addSeries({
+        key: 'cycle_time',
+        color: 'red',
+        circle: true,
+        axisOrientation: 'left',
+        data: cycleTimeData
+      });
+      timeChart.addSeries({
+        key: 'wip',
+        color: 'blue',
+        axisOrientation: 'right',
+        data: workInProgressData
+      });
+      timeChart.draw(chartArea.get(0)); 
+    }
+    
+    drawChart();
+    $(window).resize(drawChart);
   };
   
   var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
   this._jiraClient.getRapidViewById(rapidViewId)
     .then(loadEpics)
     .then(analyzeEpics)
-    .then(drawChart);
+    .then(drawReport);
 }
 
 //EpicCycleTimeChart.prototype.constructor = EpicCycleTimeChart;
