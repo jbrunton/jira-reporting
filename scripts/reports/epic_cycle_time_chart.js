@@ -6,6 +6,8 @@ var TimeChart = require('../ui/time_chart');
 var reportTemplate = require('./templates/cycle_time_report.hbs');
 var Indicator = require('../ui/indicator');
 var EpicDataset = require('../epic_dataset');
+var Simulator = require('../simulator');
+var Randomizer = require('../randomizer');
 
 function EpicCycleTimeChart(jiraClient) {
   Chart.call(this, jiraClient, {
@@ -20,9 +22,48 @@ EpicCycleTimeChart.prototype._drawLayout = function() {
   $(this.getTarget()).html(reportTemplate());
 }
 
+EpicCycleTimeChart.prototype._renderForecast = function() {
+  var forecastSection = $(this.getTarget()).find('#forecast_section');
+
+  var backlogSize = this._formValues.backlog_size;
+  var dateRangeDuration = this._formValues.sample_duration;
+  var dateRangeUnits = this._formValues.sample_duration_units;
+
+  if (backlogSize > 0 && dateRangeDuration > 0) {
+    var filterOpts = {
+    };
+    if (dateRangeDuration > 0) {
+      filterOpts.dateRange = {
+        duration: dateRangeDuration,
+        units: dateRangeUnits
+      }
+    }
+
+    var sampleCycleTimeData = this._epicDataset.getCycleTimeData({
+      filter: _.assign({ exclude: this._formValues.exclusion_filter.split(',') }, filterOpts)
+    });
+    var sampleWorkInProgressData = this._epicDataset.getWorkInProgressData({
+      filter: filterOpts
+    });
+
+    var simulator = new Simulator(new Randomizer());
+    var forecastResult = simulator.forecast({
+      backlogSize: backlogSize,
+      cycleTimeData: sampleCycleTimeData,
+      workInProgressData: sampleWorkInProgressData
+    });
+
+    var forecastTemplate = require('./templates/cycle_time_forecast.hbs');
+    forecastSection.html(forecastTemplate(forecastResult));
+  } else {
+    forecastSection.empty();
+  }
+}
+
 EpicCycleTimeChart.prototype._renderChart = function(epics) {
   var chartArea = $(this.getTarget()).find('#timechart');
   var epicDataset = new EpicDataset(epics);
+  this._epicDataset = epicDataset;
   
   var cycleTimeData = epicDataset.getCycleTimeData();
   var workInProgressData = epicDataset.getWorkInProgressData();
@@ -49,6 +90,7 @@ EpicCycleTimeChart.prototype._renderChart = function(epics) {
   }
   
   drawChart();
+  this._renderForecast();
   $(window).resize(drawChart);  
 }
 
@@ -57,9 +99,13 @@ EpicCycleTimeChart.prototype.onUpdate = function(formValues) {
     return;
   }
   
+  var updateChart = !this._formValues;
   this._formValues = formValues;
-  
-  this._drawLayout(this.getTarget());
+
+  if (!updateChart) {
+    this._renderForecast();
+    return;
+  }
 
   var report = $(this.getTarget()).find('#report');
   
@@ -101,7 +147,7 @@ EpicCycleTimeChart.prototype.onUpdate = function(formValues) {
 }
 
 EpicCycleTimeChart.prototype.onDraw = function() {
-
+  this._drawLayout(this.getTarget());
 }
 
 //EpicCycleTimeChart.prototype.constructor = EpicCycleTimeChart;
