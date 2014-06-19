@@ -10,10 +10,34 @@ function RapidView(jiraClient, view) {
   _.bindAll(this);
 }
 
-RapidView.prototype.getEpics = function() {
+RapidView.prototype.getEpics = function(opts) {
   var self = this;
-  return this._jiraClient
-    .search("issuetype=Epic AND " + this.filter.query)
+  
+  var findFilter = _.bind(function() {
+    if (opts.filter) {
+      return this._jiraClient.getFilterById(opts.filter);
+    } else {
+      return Q(null);
+    }
+  }, this);
+  
+  var performSearch = _.bind(function(filter) {
+    var query = "issuetype=Epic";
+    if (filter) {
+      query += " AND (" + filter.jql + ")";
+    }
+    if (/ORDER BY/.exec(this.filter.query)) {
+      var viewFilter = /(.*)(ORDER BY.*)/.exec(this.filter.query)[1];
+    } else {
+      var viewFilter = this.filter.query;
+    }
+    query += " AND (" + viewFilter + ")";
+    
+    return this._jiraClient.search(query);
+  }, this);
+
+  return findFilter()
+    .then(performSearch)
     .then(function(issues) {
       return _(issues)
         .map(function(issue) {

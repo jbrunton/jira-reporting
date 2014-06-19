@@ -88,7 +88,7 @@ describe ('JiraClient', function() {
     it ("makes a GET request to the given Jira endpoint", function() {
       jiraClient._get('search');
       var request = jasmine.Ajax.requests.mostRecent();
-      expect(request.url).toBe('http://www.example.com/rest/2/search');
+      expect(request.url).toBe('http://www.example.com/rest/api/2/search');
       expect(request.method).toBe('GET');
     });
     

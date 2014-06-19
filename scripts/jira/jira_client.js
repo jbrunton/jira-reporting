@@ -115,12 +115,20 @@ JiraClient.prototype.getFavouriteFilters = function() {
   return this._get('filter/favourite');
 }
 
+JiraClient.prototype.getFilterById = function(filterId) {
+  return this.getFavouriteFilters().then(function(filters) {
+    return _(filters).find(function(filter) {
+      return filter.id == filterId;
+    });
+  });
+}
+
 JiraClient.prototype._get = function(endpoint, opts) {
   var cache = opts && opts.cache;
   var cachedResult = this._resultCache[endpoint];
 
   var greenhopper = opts && opts.greenhopper;
-  var baseUrl = this._domain + '/rest/' + (greenhopper ? 'greenhopper/1.0/' : '2/');
+  var baseUrl = this._domain + '/rest/' + (greenhopper ? 'greenhopper/1.0/' : 'api/2/');
 
   var result = (cache && cachedResult)
     ? cachedResult

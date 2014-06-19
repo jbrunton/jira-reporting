@@ -18,8 +18,17 @@ function EpicCycleTimeChart(jiraClient) {
 
 EpicCycleTimeChart.prototype = _.clone(Chart.prototype);
 
+EpicCycleTimeChart.prototype._setFilters = function(filters) {
+  var jiraFilter = $(this.getTarget()).find('#jira_filter');
+  _(filters).each(function(filter) {
+    jiraFilter.append($("<option>", { value: filter.id }).text(filter.name));
+  });
+}
+
 EpicCycleTimeChart.prototype._drawLayout = function() {
   $(this.getTarget()).html(reportTemplate());
+  this._jiraClient.getFavouriteFilters()
+    .then(this._setFilters);
 }
 
 EpicCycleTimeChart.prototype._renderForecast = function() {
@@ -99,7 +108,7 @@ EpicCycleTimeChart.prototype.onUpdate = function(formValues) {
     return;
   }
   
-  var updateChart = !this._formValues;
+  var updateChart = !this._formValues || (this._formValues.jira_filter != formValues.jira_filter);
   this._formValues = formValues;
 
   if (!updateChart) {
@@ -114,9 +123,13 @@ EpicCycleTimeChart.prototype.onUpdate = function(formValues) {
   });
   indicator.display(this.getTarget());
   
-  var loadEpics = function(view) {
-    return view.getEpics();
-  };
+  var loadEpics = _.bind(function(view) {
+    var opts = {};
+    if (this._formValues.jira_filter) {
+      opts.filter = this._formValues.jira_filter;
+    }
+    return view.getEpics(opts);
+  }, this);
   
   var analyzeEpics = function(epics) {
     indicator.begin(epics.length);
