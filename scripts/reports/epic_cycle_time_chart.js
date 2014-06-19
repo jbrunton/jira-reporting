@@ -14,15 +14,59 @@ function EpicCycleTimeChart(jiraClient) {
   });
 }
 
-EpicCycleTimeChart.prototype = Chart.prototype;
+EpicCycleTimeChart.prototype = _.clone(Chart.prototype);
 
-EpicCycleTimeChart.prototype.onDraw = function(target) {
-  var report = $(reportTemplate()).hide().appendTo(target);
+EpicCycleTimeChart.prototype._drawLayout = function() {
+  $(this.getTarget()).html(reportTemplate());
+}
+
+EpicCycleTimeChart.prototype._renderChart = function(epics) {
+  var chartArea = $(this.getTarget()).find('#timechart');
+  var epicDataset = new EpicDataset(epics);
+  
+  var cycleTimeData = epicDataset.getCycleTimeData();
+  var workInProgressData = epicDataset.getWorkInProgressData();
+  
+  // report.show();
+
+  function drawChart() {
+    chartArea.empty();
+    var timeChart = new TimeChart();
+    timeChart.addSeries({
+      key: 'cycle_time',
+      color: 'red',
+      circle: true,
+      axisOrientation: 'left',
+      data: cycleTimeData
+    });
+    timeChart.addSeries({
+      key: 'wip',
+      color: 'blue',
+      axisOrientation: 'right',
+      data: workInProgressData
+    });
+    timeChart.draw(chartArea.get(0)); 
+  }
+  
+  drawChart();
+  $(window).resize(drawChart);  
+}
+
+EpicCycleTimeChart.prototype.onUpdate = function(formValues) {
+  if (_.isEqual(formValues, this._formValues)) {
+    return;
+  }
+  
+  this._formValues = formValues;
+  
+  this._drawLayout(this.getTarget());
+
+  var report = $(this.getTarget()).find('#report');
   
   var indicator = new Indicator(function(count, position) {
     this.setText("Loaded " + position + " / " + count + " epics.");
   });
-  indicator.display(target);
+  indicator.display(this.getTarget());
   
   var loadEpics = function(view) {
     return view.getEpics();
@@ -42,46 +86,22 @@ EpicCycleTimeChart.prototype.onDraw = function(target) {
     );
   };
   
-  var drawReport = function(epics) {
+  var hideIndicator = function() {
     indicator.remove();
-
-    var chartArea = report.find('#timechart');
-    var epicDataset = new EpicDataset(epics);
-    
-    var cycleTimeData = epicDataset.getCycleTimeData();
-    var workInProgressData = epicDataset.getWorkInProgressData();
-    
-
-    report.show();
-
-    function drawChart() {
-      chartArea.empty();
-      var timeChart = new TimeChart();
-      timeChart.addSeries({
-        key: 'cycle_time',
-        color: 'red',
-        circle: true,
-        axisOrientation: 'left',
-        data: cycleTimeData
-      });
-      timeChart.addSeries({
-        key: 'wip',
-        color: 'blue',
-        axisOrientation: 'right',
-        data: workInProgressData
-      });
-      timeChart.draw(chartArea.get(0)); 
-    }
-    
-    drawChart();
-    $(window).resize(drawChart);
   };
+  
+  var forecastSection = report.find('#forecast_section');
   
   var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
   this._jiraClient.getRapidViewById(rapidViewId)
     .then(loadEpics)
     .then(analyzeEpics)
-    .then(drawReport);
+    .then(this._renderChart)
+    .then(hideIndicator);
+}
+
+EpicCycleTimeChart.prototype.onDraw = function() {
+
 }
 
 //EpicCycleTimeChart.prototype.constructor = EpicCycleTimeChart;

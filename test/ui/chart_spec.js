@@ -54,6 +54,12 @@ describe ('Chart', function() {
   });
   
   describe ('#draw', function() {    
+    it ("sets the value of getTarget()", function() {
+      var chart = new Chart(jiraClient, validOpts);
+      chart.draw(target);
+      expect(chart.getTarget()).toBe($(target).find('#ghx-chart-content').get(0));
+    });
+
     it ("clears the ghx message, intro and header elements", function() {
       new Chart(jiraClient, validOpts).draw(target);
       expect($(target).find('#ghx-chart-message')).toBeEmpty();
@@ -61,8 +67,8 @@ describe ('Chart', function() {
     
     it ("invokes the given onDraw method on the ghx chart", function() {
       new Chart(jiraClient, _.assign(validOpts, {
-        onDraw: function(target) {
-          $("<p>Hello, World!</p>").appendTo(target);
+        onDraw: function() {
+          $("<p>Hello, World!</p>").appendTo(this.getTarget());
         }
       })).draw(target);
       expect($(target).find('#ghx-chart-content p')).toHaveText("Hello, World!");
@@ -74,9 +80,9 @@ describe ('Chart', function() {
     
     beforeEach(function() {
       chart = new Chart(jiraClient, _.assign(validOpts, {
-        onDraw: function(target) {
-          someInput = $("<input id='some-input'>").appendTo(target);
-          someOptions = $("<select id='some-options'><option value='some-value'>Some Value</option></select>").appendTo(target);
+        onDraw: function() {
+          someInput = $("<input id='some-input'>").appendTo(this.getTarget());
+          someOptions = $("<select id='some-options'><option value='some-value'>Some Value</option></select>").appendTo(this.getTarget());
         },
         onUpdate: function() {}
       }));
@@ -87,30 +93,30 @@ describe ('Chart', function() {
     
     it ("invokes the onUpdate handler if an input blur event is fired", function() {   
       someInput.blur();
-      expect(chart.onUpdate).toHaveBeenCalledWith(chartContent, jasmine.any(Object));
+      expect(chart.onUpdate).toHaveBeenCalledWith(jasmine.any(Object));
     });
     
     it ("invokes the onUpdate handler if a select change event is fired", function() {
       someOptions.change();
-      expect(chart.onUpdate).toHaveBeenCalledWith(chartContent, jasmine.any(Object));
+      expect(chart.onUpdate).toHaveBeenCalledWith(jasmine.any(Object));
     });
 
     it ("passes a dictionary of all input values to the onUpdate handler when invoked", function() {   
       someInput.val('some value');
       someInput.blur();
-      expect(chart.onUpdate).toHaveBeenCalledWith(chartContent, { 'some-input': 'some value', 'some-options': 'some-value' });
+      expect(chart.onUpdate).toHaveBeenCalledWith({ 'some-input': 'some value', 'some-options': 'some-value' });
     });
     
     it ("converts valid input values to numbers", function() {
       someInput.val('123');
       someInput.blur();
-      expect(chart.onUpdate).toHaveBeenCalledWith(chartContent, { 'some-input': 123, 'some-options': 'some-value' });
+      expect(chart.onUpdate).toHaveBeenCalledWith({ 'some-input': 123, 'some-options': 'some-value' });
     });
 
     it ("doesn't coerce the empty string to 0", function() {
       someInput.val('');
       someInput.blur();
-      expect(chart.onUpdate).toHaveBeenCalledWith(chartContent, { 'some-input': '', 'some-options': 'some-value' });
+      expect(chart.onUpdate).toHaveBeenCalledWith({ 'some-input': '', 'some-options': 'some-value' });
     });
   });
 });

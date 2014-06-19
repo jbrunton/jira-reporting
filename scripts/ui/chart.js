@@ -15,6 +15,10 @@ function Chart(jiraClient, opts) {
   _.bindAll(this);
 }
 
+Chart.prototype.getTarget = function() {
+  return this._target;
+};
+
 Chart.prototype.onDraw = function(target) {
   
 }
@@ -24,15 +28,16 @@ Chart.prototype.onUpdate = function(target, formValues) {
 }
 
 Chart.prototype.draw = function(target) {
-  var chartContentTarget = $(target).find('#ghx-chart-content').get(0);
   _(['message', 'intro', 'header', 'content'])
     .each(function(divName) {
       $(target).find('#ghx-chart-' + divName).empty();
     });
-  this.onDraw(chartContentTarget);
-  
+
+  var chartContentTarget = $(target).find('#ghx-chart-content').get(0);
+  this._target = chartContentTarget;
+
   var notifyUpdateListener = _.bind(function() {
-    var inputs = $(target).find('input,select');
+    var inputs = $(chartContentTarget).find('input,select');
     var values = _(inputs)
       .reduce(function(values, el) {
         var valObj = {};
@@ -40,9 +45,12 @@ Chart.prototype.draw = function(target) {
         valObj[el.id] = $.isNumeric(val) ? Number(val) : val;
         return _.assign(valObj, values);
       }, {});
-    this.onUpdate(chartContentTarget, values);
+    this.onUpdate(values);
   }, this);
   
+  this.onDraw();
+  notifyUpdateListener()
+
   $(target).on('blur', 'input', notifyUpdateListener);
   $(target).on('change', 'select', notifyUpdateListener);
 }
