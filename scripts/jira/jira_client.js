@@ -6,8 +6,8 @@ var Validator = require('../validator');
 
 function JiraClient(opts) {
   new Validator()
-    .hasArguments(arguments)
-    .isNotNull(opts.domain, 'domain');
+    .requires(opts, 'opts')
+    .requires(opts.domain, 'domain');
 
   this._domain = opts.domain;
   this._resultCache = {};
@@ -76,23 +76,16 @@ JiraClient.prototype.search = function(opts) {
 }
 
 JiraClient.prototype.getRapidViews = function() {
-  var self = this;
-  var deferred = Q.defer();
-  $.ajax({
-		type: 'GET',
-		url: this._domain + "/rest/greenhopper/1.0/rapidviews/list",
-		contentType: "application/json",
-		error: function() {
-			deferred.reject();
-		},
-		success: function(results) {
-			deferred.resolve(
-			  _(results.views).map(function(view) {
-			    return new RapidView(self, view);
-			  }));
-		}
-	});
-	return deferred.promise;
+  var createViews = _.bind(function(result) {
+    var self = this;
+    return _(result.views)
+      .map(function(view) {
+	      return new RapidView(self, view);
+	    }).value()
+  }, this);
+    
+  return this._get('rapidviews/list', { greenhopper: true })
+    .then(createViews);
 }
 
 JiraClient.prototype.getRapidViewById = function(rapidViewId) {
@@ -101,6 +94,11 @@ JiraClient.prototype.getRapidViewById = function(rapidViewId) {
       return view.id == rapidViewId;
     });
   });
+}
+
+JiraClient.prototype.getCurrentRapidView = function() {
+  var rapidViewId = /rapidView=(\d*)/.exec(window.location.href)[1];
+  return this.getRapidViewById(rapidViewId);
 }
 
 JiraClient.prototype.getEpicLinkFieldId = function () {
@@ -117,16 +115,28 @@ JiraClient.prototype.getFavouriteFilters = function() {
   return this._get('filter/favourite');
 }
 
+JiraClient.prototype.getFilterById = function(filterId) {
+  return this.getFavouriteFilters().then(function(filters) {
+    return _(filters).find(function(filter) {
+      return filter.id == filterId;
+    });
+  });
+}
+
 JiraClient.prototype._get = function(endpoint, opts) {
   var cache = opts && opts.cache;
   var cachedResult = this._resultCache[endpoint];
+
+  var greenhopper = opts && opts.greenhopper;
+  var baseUrl = this._domain + '/rest/' + (greenhopper ? 'greenhopper/1.0/' : 'api/2/');
+
   var result = (cache && cachedResult)
     ? cachedResult
-    : $.ajax({
+    : Q($.ajax({
         type: 'GET',
-        url: this._domain + '/rest/2/' + endpoint,
+        url: baseUrl + endpoint,
         contentType: 'application/json'
-      });
+      }));
   if (cache && !cachedResult) {
     this._resultCache[endpoint] = result;
   }

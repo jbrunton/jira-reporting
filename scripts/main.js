@@ -15,6 +15,7 @@ var d3 = require('d3');
 var TimeChart = require('./ui/time_chart');
 var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
+var EpicCycleTimeChart = require('./reports/epic_cycle_time_chart');
 
 $(function() {
 
@@ -238,7 +239,7 @@ $(function() {
       drawTimeChart();
       $(window).resize(drawTimeChart);
 
-      var reportTemplate = require("./templates/epic_cycle_time/report.hbs");
+      var reportTemplate = require("./reports/templates/cycle_time_report.hbs");
       var reportSection = $(reportTemplate()).appendTo(target);
 
       var backlogSizeInput = reportSection.find('#backlog_size');
@@ -276,7 +277,7 @@ $(function() {
             workInProgressData: sampleWorkInProgressData
           });
       
-          var forecastTemplate = require('./templates/epic_cycle_time/forecast.hbs');
+          var forecastTemplate = require('./reports/templates/cycle_time_forecast.hbs');
           forecastSection.html(forecastTemplate(forecastResult));
         } else {
           forecastSection.empty();
@@ -327,7 +328,7 @@ $(function() {
   
   var chartMenu = new ChartMenu();
   chartMenu.configureCharts([
-    new Chart({
+    new Chart(jiraClient, {
       menuItemId: 'issues-by-epic',
       title: 'Issues By Epic',
       onDraw: drawIssuesByEpic
@@ -337,12 +338,13 @@ $(function() {
     //   title: 'Epic Throughput',
     //   onDraw: drawEpicThroughput
     // }),
-    new Chart({
-      menuItemId: 'epic-cycle-time',
-      title: 'Epic Cycle Time',
-      onDraw: drawEpicCycleTime
-    }),
-    new Chart({
+    // new Chart({
+    //   menuItemId: 'epic-cycle-time',
+    //   title: 'Epic Cycle Time',
+    //   onDraw: drawEpicCycleTime
+    // }),
+    new EpicCycleTimeChart(jiraClient),
+    new Chart(jiraClient, {
       menuItemId: 'epics-by-sprint',
       title: 'Epics by Sprint',
       onDraw: drawEpicsBySprint

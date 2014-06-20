@@ -9,11 +9,17 @@ Validator.prototype.hasArguments = function(arguments) {
   return this;
 }
 
-Validator.prototype.isNotNull = function(value, name) {
+Validator.prototype.requires = function(value, name) {
   if (value == null) {
-    throw ("Expected " + name + " to be defined.");
+    throw Validator.messages.requires(name);
   }
   return this;
 }
+
+Validator.messages = {
+  requires: function(name) {
+    return "Required " + name + ".";
+  }
+};
 
 module.exports = Validator;
