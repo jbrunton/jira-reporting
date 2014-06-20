@@ -13,6 +13,14 @@ function RapidView(jiraClient, view) {
 RapidView.prototype.getEpics = function(opts) {
   var self = this;
   
+  function cleanQuery(query) {
+    if (/ORDER BY/.exec(query)) {
+      return /(.*)(ORDER BY.*)/.exec(query)[1];
+    } else {
+      return query;
+    }    
+  }
+  
   var findFilter = _.bind(function() {
     if (opts.filter) {
       return this._jiraClient.getFilterById(opts.filter);
@@ -24,14 +32,9 @@ RapidView.prototype.getEpics = function(opts) {
   var performSearch = _.bind(function(filter) {
     var query = "issuetype=Epic";
     if (filter) {
-      query += " AND (" + filter.jql + ")";
+      query += " AND (" + cleanQuery(filter.jql) + ")";
     }
-    if (/ORDER BY/.exec(this.filter.query)) {
-      var viewFilter = /(.*)(ORDER BY.*)/.exec(this.filter.query)[1];
-    } else {
-      var viewFilter = this.filter.query;
-    }
-    query += " AND (" + viewFilter + ")";
+    query += " AND (" + cleanQuery(this.filter.query) + ")";
     
     return this._jiraClient.search(query);
   }, this);
