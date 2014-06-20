@@ -16,6 +16,7 @@ var TimeChart = require('./ui/time_chart');
 var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
 var EpicCycleTimeChart = require('./reports/epic_cycle_time_chart');
+var IssuesByIntervalChart = require('./reports/issues_by_interval_chart');
 
 $(function() {
 
@@ -344,6 +345,7 @@ $(function() {
     //   onDraw: drawEpicCycleTime
     // }),
     new EpicCycleTimeChart(jiraClient),
+    new IssuesByIntervalChart(jiraClient),
     new Chart(jiraClient, {
       menuItemId: 'epics-by-sprint',
       title: 'Epics by Sprint',
