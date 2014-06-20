@@ -12,7 +12,12 @@ function IssuesByIntervalChart(jiraClient) {
 IssuesByIntervalChart.prototype = _.clone(Chart.prototype);
 
 IssuesByIntervalChart.prototype.onDraw = function() {
-  $(this.getTarget()).append("<p>Issues</p>");
+  var reportTemplate = require('./templates/issues_by_interval_report.hbs');
+  $(this.getTarget()).append(reportTemplate({
+    issues: [
+      { summary: 'foo' }
+    ]
+  }));
 }
 
 module.exports = IssuesByIntervalChart;
