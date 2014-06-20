@@ -34,7 +34,7 @@ describe ('JiraClient', function() {
     });
     
     it ("requests the current user's favourite filters", function() {
-      expect(request.url).toEqual('http://www.example.com/rest/2/filter/favourite');
+      expect(request.url).toEqual('http://www.example.com/rest/api/2/filter/favourite');
       expect(request.method).toBe('GET');
     });
     

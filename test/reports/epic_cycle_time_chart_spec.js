@@ -17,7 +17,7 @@ describe ('EpicCycleTimeChart', function() {
   });
   
   describe ('#onDraw', function() {
-    it ("draws the UI for the report", function() {
+    xit ("draws the UI for the report", function() {
       var target = createFakeDom();
 
       chart.draw(target);
