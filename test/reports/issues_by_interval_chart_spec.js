@@ -1,16 +1,32 @@
 var $ = require('jquery');
 var Q = require('q');
 var IssuesByIntervalChart = require('../../scripts/reports/issues_by_interval_chart');
+var Validator = require('../../scripts/validator');
+var UiHelper = require('../../scripts/ui/ui_helper');
 
 describe ('IssuesByIntervalChart', function() {
-  var chart, jiraClient;
+  var chart, jiraClient, uiHelper;
   
   beforeEach(function() {
     jiraClient = build('jira_client');
-    chart = new IssuesByIntervalChart(jiraClient);
+    uiHelper = new UiHelper(jiraClient);
+    spyOn(uiHelper, 'loadFilters');
+    chart = new IssuesByIntervalChart(jiraClient, uiHelper);
   });
   
   describe ('constructor', function() {
+    it ("requires a JiraClient", function() {
+      expect(function() {
+        new IssuesByIntervalChart(null, uiHelper);
+      }).toThrow(Validator.messages.requires('jiraClient'));
+    });
+    
+    it ("requires a UiHelper", function() {
+      expect(function() {
+        new IssuesByIntervalChart(jiraClient, null);
+      }).toThrow(Validator.messages.requires('uiHelper'));    
+    });
+    
     it ("initializes the instance", function() {
       expect(chart.title).toBe('Issues By Interval');
       expect(chart.menuItemId).toBe('issues-by-interval');
@@ -18,33 +34,49 @@ describe ('IssuesByIntervalChart', function() {
   });
   
   describe ('#onDraw', function() {
-    it ("dpes nothing", function() {
+    it ("renders the report options", function() {
       var target = createFakeDom();
 
       chart.draw(target);
 
       var chartContent = $(target).find('#ghx-chart-content');
-      expect(chartContent).toBeEmpty();
+      expect(chartContent).toContainElement('select#jira_filter');
+      expect(uiHelper.loadFilters).toHaveBeenCalled();
     });
   });
   
   describe ('#onUpdate', function() {
-    it ("draws the issues for the project", function(done) {
+    var target;
+    
+    beforeEach(function() {
       spyOn(jiraClient, 'search').and.returnValue(
         Q([
           build('issue', { summary: 'Some Issue' })
         ])
       );
-      var target = createFakeDom();
+      target = createFakeDom();
       chart.draw(target);
-      
+    });
+    
+    it ("draws the issues for the project", function(done) {
       chart.onUpdate()
         .then(function() {
           var chartContent = $(target).find('#ghx-chart-content');
-          expect(chartContent).toContainText('Some Issue');
+          expect(chartContent.find('#report')).toContainText('Some Issue');
           
           done();
         });      
+    });
+    
+    xit ("filters issues according to the selected filter option", function() {
+      spyOn(jiraClient, 'getFilterById').and.returnValue(
+        Q({ jql: 'some query' })
+      );
+      chart.onUpdate()
+        .then(function() {
+          expect(jiraClient.search).toHaveBeenCalledWith('some query');          
+          done();
+        });
     });
   });
 });

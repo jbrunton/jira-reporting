@@ -52,12 +52,12 @@ JiraClient.prototype.getResourceByName = function(resourceType, resourceName) {
 
 JiraClient.prototype.search = function(opts) {
   var queryString = "maxResults=9999";
-  if (typeof opts == "object") {
+  if (opts && typeof opts == "object") {
     queryString += "&jql=" + opts.query;
     if (opts.expand) {
       queryString += "&expand=" + opts.expand.join();
     }
-  } else if (typeof opts == "string") {
+  } else if (opts && typeof opts == "string") {
     queryString += "&jql=" + opts;
   } else {
     queryString = "";

@@ -17,6 +17,7 @@ var Simulator = require('./simulator');
 var Randomizer = require('./randomizer');
 var EpicCycleTimeChart = require('./reports/epic_cycle_time_chart');
 var IssuesByIntervalChart = require('./reports/issues_by_interval_chart');
+var UiHelper = require('./ui/ui_helper');
 
 $(function() {
 
@@ -32,6 +33,8 @@ $(function() {
   var jiraClient = new JiraClient({
     domain: window.location.origin
   });
+  
+  var uiHelper = new UiHelper(jiraClient);
 
   Handlebars.registerHelper('issue_link', function() {
     var escapedKey = Handlebars.Utils.escapeExpression(this.key);
@@ -345,7 +348,7 @@ $(function() {
     //   onDraw: drawEpicCycleTime
     // }),
     new EpicCycleTimeChart(jiraClient),
-    new IssuesByIntervalChart(jiraClient),
+    new IssuesByIntervalChart(jiraClient, uiHelper),
     new Chart(jiraClient, {
       menuItemId: 'epics-by-sprint',
       title: 'Epics by Sprint',
