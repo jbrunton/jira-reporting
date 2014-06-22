@@ -57,8 +57,10 @@ JiraClient.prototype.search = function(opts) {
     if (opts.expand) {
       queryString += "&expand=" + opts.expand.join();
     }
-  } else {
+  } else if (typeof opts == "string") {
     queryString += "&jql=" + opts;
+  } else {
+    queryString = "";
   }
   var deferred = Q.defer();
   $.ajax({

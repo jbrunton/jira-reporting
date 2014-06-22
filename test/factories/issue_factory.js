@@ -6,9 +6,12 @@ Factory.define('issue', Issue)
   .attr('key', ['id'], function(id) {
     return "DEMO-" + id;
   })
-  .attr('fields', ['id'], function(id) {
+  .attr('summary', ['id'], function(id) {
+    return 'Demo Issue ' + id;
+  })
+  .attr('fields', ['summary'], function(summary) {
     return {
-      summary: 'Demo Issue ' + id
+      summary: summary
     };
   })
   .attr('changelog', function() {

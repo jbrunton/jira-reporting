@@ -19,11 +19,11 @@ Chart.prototype.getTarget = function() {
   return this._target;
 };
 
-Chart.prototype.onDraw = function(target) {
+Chart.prototype.onDraw = function() {
   
 }
 
-Chart.prototype.onUpdate = function(target, formValues) {
+Chart.prototype.onUpdate = function(formValues) {
   
 }
 
