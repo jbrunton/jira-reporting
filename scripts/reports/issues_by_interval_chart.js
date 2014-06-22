@@ -4,6 +4,7 @@ var Q = require('q');
 var moment = require('moment');
 var Chart = require('../ui/chart');
 var Validator = require('../validator');
+var QueryBuilder = require('../jira/query_builder');
 
 function IssuesByIntervalChart(jiraClient, uiHelper) {
   Chart.call(this, jiraClient, {
@@ -28,33 +29,22 @@ IssuesByIntervalChart.prototype.onDraw = function() {
 IssuesByIntervalChart.prototype.onUpdate = function(formValues) {
   var reportTemplate = require('./templates/issues_by_interval_report.hbs');
   
-  function cleanQuery(query) {
-    if (/ORDER BY/.exec(query)) {
-      return /(.*)(ORDER BY.*)/.exec(query)[1];
-    } else {
-      return query;
-    }    
-  }
-  
   var genQuery = _.bind(function() {
-    var query = "";
+    var queryBuilder = new QueryBuilder();
     
     if (formValues && formValues.sample_duration && formValues.sample_duration_units) {
       var since = moment().subtract(formValues.sample_duration, formValues.sample_duration_units);
-      query += 'created >= "' + since.format('YYYY/MM/DD') + '"';
+      queryBuilder.and('created >= "' + since.format('YYYY/MM/DD') + '"');
     }
     
     if (formValues && formValues.jira_filter && formValues.jira_filter > 0) {
       return this._jiraClient.getFilterById(formValues.jira_filter)
         .then(function(filter) {
-          if (query != "") {
-            query += " AND ";
-          }
-          query += "(" + cleanQuery(filter.jql) + ")";
-          return query;
+          queryBuilder.and(filter.jql);
+          return queryBuilder.getQuery();
         });
     } else {
-      return Q(query);
+      return Q(queryBuilder.getQuery());
     }    
   }, this);
   

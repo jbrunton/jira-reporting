@@ -3,6 +3,7 @@ var $ = require('jquery');
 var Q = require('q');
 var Epic = require('./epic');
 var Sprint = require('./sprint');
+var QueryBuilder = require('./query_builder');
 
 function RapidView(jiraClient, view) {
   this._jiraClient = jiraClient;
@@ -13,14 +14,6 @@ function RapidView(jiraClient, view) {
 RapidView.prototype.getEpics = function(opts) {
   var self = this;
   
-  function cleanQuery(query) {
-    if (/ORDER BY/.exec(query)) {
-      return /(.*)(ORDER BY.*)/.exec(query)[1];
-    } else {
-      return query;
-    }    
-  }
-  
   var findFilter = _.bind(function() {
     if (opts.filter) {
       return this._jiraClient.getFilterById(opts.filter);
@@ -30,13 +23,13 @@ RapidView.prototype.getEpics = function(opts) {
   }, this);
   
   var performSearch = _.bind(function(filter) {
-    var query = "issuetype=Epic";
+    var queryBuilder = new QueryBuilder("issuetype=Epic");
     if (filter) {
-      query += " AND (" + cleanQuery(filter.jql) + ")";
+      queryBuilder.and(filter.jql);
     }
-    query += " AND (" + cleanQuery(this.filter.query) + ")";
+    queryBuilder.and(this.filter.query);
     
-    return this._jiraClient.search(query);
+    return this._jiraClient.search(queryBuilder.getQuery());
   }, this);
 
   return findFilter()

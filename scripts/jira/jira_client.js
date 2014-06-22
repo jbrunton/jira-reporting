@@ -75,10 +75,7 @@ JiraClient.prototype.search = function(opts) {
 		},
 		success: function(results) {
 			deferred.resolve(
-			  _(results.issues)
-			    .map(function(issue) {
-			      return new Issue(issue);
-			    }).value()
+			  results.issues
 			);
 		}
 	});
