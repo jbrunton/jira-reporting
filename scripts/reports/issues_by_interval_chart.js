@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var _ = require('lodash');
 var Q = require('q');
+var moment = require('moment');
 var Chart = require('../ui/chart');
 var Validator = require('../validator');
 
@@ -27,14 +28,29 @@ IssuesByIntervalChart.prototype.onDraw = function() {
 IssuesByIntervalChart.prototype.onUpdate = function(formValues) {
   var reportTemplate = require('./templates/issues_by_interval_report.hbs');
   
+  function cleanQuery(query) {
+    if (/ORDER BY/.exec(query)) {
+      return /(.*)(ORDER BY.*)/.exec(query)[1];
+    } else {
+      return query;
+    }    
+  }
+  
   var genQuery = _.bind(function() {
+    var query = "";
+    
+    if (formValues && formValues.sample_duration && formValues.sample_duration_units) {
+      var since = moment().subtract(formValues.sample_duration, formValues.sample_duration_units);
+      query += 'created >= "' + since.format('YYYY/MM/DD') + '"';
+    }
+    
     if (formValues && formValues.jira_filter && formValues.jira_filter > 0) {
       return this._jiraClient.getFilterById(formValues.jira_filter)
         .then(function(filter) {
-          return filter.jql;
+          return query + " AND (" + cleanQuery(filter.jql) + ")";
         });
     } else {
-      return Q(null);
+      return Q(query);
     }    
   }, this);
   
