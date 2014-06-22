@@ -47,7 +47,11 @@ IssuesByIntervalChart.prototype.onUpdate = function(formValues) {
     if (formValues && formValues.jira_filter && formValues.jira_filter > 0) {
       return this._jiraClient.getFilterById(formValues.jira_filter)
         .then(function(filter) {
-          return query + " AND (" + cleanQuery(filter.jql) + ")";
+          if (query != "") {
+            query += " AND ";
+          }
+          query += "(" + cleanQuery(filter.jql) + ")";
+          return query;
         });
     } else {
       return Q(query);
@@ -55,7 +59,13 @@ IssuesByIntervalChart.prototype.onUpdate = function(formValues) {
   }, this);
   
   var searchIssues = _.bind(function(query) {
-    return this._jiraClient.search(query);
+    var opts = {
+      expand: ['changelog']      
+    };
+    if (query && query != "") {
+      opts.query = query;
+    }
+    return this._jiraClient.search(opts);
   }, this);
   
   var drawReport = _.bind(function(issues) {

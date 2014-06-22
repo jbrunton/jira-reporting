@@ -3,6 +3,7 @@ var Q = require('q');
 var _ = require('lodash');
 var RapidView = require('./rapid_view');
 var Validator = require('../validator');
+var Issue = require('./issue');
 
 function JiraClient(opts) {
   new Validator()
@@ -53,7 +54,9 @@ JiraClient.prototype.getResourceByName = function(resourceType, resourceName) {
 JiraClient.prototype.search = function(opts) {
   var queryString = "maxResults=9999";
   if (opts && typeof opts == "object") {
-    queryString += "&jql=" + opts.query;
+    if (opts.query) {
+      queryString += "&jql=" + opts.query;
+    }
     if (opts.expand) {
       queryString += "&expand=" + opts.expand.join();
     }
@@ -71,7 +74,12 @@ JiraClient.prototype.search = function(opts) {
 			deferred.reject();
 		},
 		success: function(results) {
-			deferred.resolve(results.issues);
+			deferred.resolve(
+			  _(results.issues)
+			    .map(function(issue) {
+			      return new Issue(issue);
+			    }).value()
+			);
 		}
 	});
 	return deferred.promise;
