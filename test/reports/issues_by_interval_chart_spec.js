@@ -79,5 +79,24 @@ describe ('IssuesByIntervalChart', function() {
         });
     });
   });
+  
+  describe ('#_genQuery', function() {
+    it ("filters out epics", function(done) {
+      chart._genQuery()
+        .then(function(query) {
+          expect(query).toEqual("issuetype != Epic");
+          done();
+        });
+    });
+    
+    it ("filters by sample time, if specified", function(done) {
+      // TODO: something like ruby's timecop would be helpful here
+      chart._genQuery()
+        .then(function(query) {
+          expect(query).toEqual("(issuetype != Epic) AND (foo)");
+          done();
+        });
+    });
+  });
 });
 

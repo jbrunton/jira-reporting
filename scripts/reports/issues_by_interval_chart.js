@@ -26,6 +26,17 @@ IssuesByIntervalChart.prototype.onDraw = function() {
   this._uiHelper.loadFilters($(this.getTarget()).find('#jira_filter'));
 }
 
+IssuesByIntervalChart.prototype._genQuery = function(formValues) {
+  var queryBuilder = new QueryBuilder("issuetype != Epic");
+  
+  if (formValues && formValues.sample_duration && formValues.sample_duration_units) {
+    var since = moment().subtract(formValues.sample_duration, formValues.sample_duration_units);
+    queryBuilder.and('created >= "' + since.format('YYYY/MM/DD') + '"');
+  }
+  
+  return Q(queryBuilder.getQuery());
+}
+
 IssuesByIntervalChart.prototype.onUpdate = function(formValues) {
   var reportTemplate = require('./templates/issues_by_interval_report.hbs');
   
